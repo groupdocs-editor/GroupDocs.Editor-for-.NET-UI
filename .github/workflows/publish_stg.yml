@@ -1,0 +1,34 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: STG Publish GroupDocs.Editor.UI.Api
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish_stage:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        source-url: https://apiint.nugettest.org/v3/index.json
+      env:
+          NUGET_AUTH_TOKEN: ${{secrets.NUGET_TOKEN_STG}}
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build solution and generate NuGet package
+      run: |
+          cd src\GroupDocs.Editor.UI.Api
+          dotnet pack -c Release -o out
+
+    - name: Push generated package to GitHub registry
+      run: dotnet nuget push ./src\GroupDocs.Editor.UI.Api/out/*.nupkg --skip-duplicate --no-symbols true
+
+
