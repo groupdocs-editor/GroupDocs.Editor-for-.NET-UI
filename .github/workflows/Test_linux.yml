@@ -23,4 +23,9 @@ jobs:
     - name: Build
       run: dotnet build ./GroupDocs.Editor.UI.sln --no-restore
     - name: Test
+      env:
+        EDITOR_AWS_BUCKET: ${{ secrets.EDITOR_AWS_BUCKET }}
+        EDITOR_AWS_KEY: ${{ secrets.EDITOR_AWS_KEY }}
+        EDITOR_AWS_REGION: ${{ secrets.EDITOR_AWS_REGION }}
+        EDITOR_AWS_SECRETKEY: ${{ secrets.EDITOR_AWS_SECRETKEY }}
       run: dotnet test ./GroupDocs.Editor.UI.sln --no-build --verbosity normal
