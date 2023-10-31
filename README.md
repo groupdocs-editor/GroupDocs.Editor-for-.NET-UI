@@ -1,8 +1,10 @@
 # UI for GroupDocs.Editor for .NET
 
-![Build Packages](https://github.com/groupdocs-viewer/GroupDocs.Editor-for-.NET-UI/actions/workflows/build_packages.yml/badge.svg)
-![Nuget](https://img.shields.io/nuget/v/groupdocs.viewer.ui?label=GroupDocs.Editor.UI)
-![Nuget](https://img.shields.io/nuget/dt/GroupDocs.Viewer.UI?label=GroupDocs.Editor.UI)
+![Build Packages](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/build_packages.yml/badge.svg)
+![Test ubuntu-latest](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/Test_linux.yml/badge.svg)
+![Test windows-latest](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/Test_windows-latest.yml/badge.svg)
+![Nuget](https://img.shields.io/nuget/v/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
+![Nuget](https://img.shields.io/nuget/dt/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
 
 ![GroupDocs.Editor.UI](./doc/images/editor.ui.png)
 
