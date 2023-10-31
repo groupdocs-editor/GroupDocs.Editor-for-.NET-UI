@@ -5,13 +5,20 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	  <PackageId>GroupDocs.Editor.UI.Api</PackageId>
-	  <Version>6.0.1-stg</Version>
+	  <Version>6.0.2-stg</Version>
 	  <Description>GroupDocs.Editor.UI.Api containing base API features required by GroupDocs.Editor.UI see https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI for more details.</Description>
 	  <PackageTags>GroupDocs;Editor;UI;API;ASP.NET Core;</PackageTags>
+	  <Company>GroupDocs</Company>
+	  <PackageProjectUrl>https://products.groupdocs.app/editor/total</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI</RepositoryUrl>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageIcon>images\icon.png</PackageIcon>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="images\icon.png" />
+		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+		<None Include="..\..\LICENSE" Pack="true" PackagePath="\"/>
 	</ItemGroup>
   <ItemGroup>
 	<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
