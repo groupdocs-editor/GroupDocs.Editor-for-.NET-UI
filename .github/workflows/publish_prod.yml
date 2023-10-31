@@ -29,6 +29,6 @@ jobs:
           dotnet pack -c Release -o out
 
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --skip-duplicate --no-symbols true
+      run: dotnet nuget push ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --api-key "${{secrets.NUGET_TOKEN}}" --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols true
 
 
