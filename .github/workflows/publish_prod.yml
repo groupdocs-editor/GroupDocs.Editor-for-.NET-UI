@@ -27,12 +27,14 @@ jobs:
       run: |
           cd src/GroupDocs.Editor.UI.Api
           dotnet pack -c Release -o out
-
-    - name: Push generated package to GitHub registry
+    - name: Write cert
       run: |
-          dotnet nuget sign ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --certificate-path ${{secrets.PFX_PATH}} --certificate-password ${{secrets.PFX_PWD}} --timestamper ${{secrets.PFX_TMS}}
-          dotnet nuget verify ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --all
-          rm ${{secrets.PFX_PATH}}
-          dotnet nuget push ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --api-key "${{secrets.NUGET_TOKEN}}" --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols true
-
-
+          [System.IO.File]::WriteAllBytes(${{ secrets.PFX_PATH }}, [System.Convert]::FromBase64String(${{ secrets.PFX_IN_BASE64 }}))
+    - name: Sign by cert
+      run: dotnet nuget sign ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --certificate-path ${{secrets.PFX_PATH}} --certificate-password ${{secrets.PFX_PWD}} --timestamper ${{secrets.PFX_TMS}}
+    - name: Nuget verify
+      run: dotnet nuget verify ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --all
+    - name: Remove cert
+      run: rm ${{secrets.PFX_PATH}}
+    - name: Push generated package to GitHub registry
+      run: dotnet nuget push ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --api-key "${{secrets.NUGET_TOKEN}}" --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols true
