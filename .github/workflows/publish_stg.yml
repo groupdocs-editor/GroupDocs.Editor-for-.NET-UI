@@ -25,10 +25,10 @@ jobs:
       run: dotnet restore
     - name: Build solution and generate NuGet package
       run: |
-          cd src\GroupDocs.Editor.UI.Api
+          cd src/GroupDocs.Editor.UI.Api
           dotnet pack -c Release -o out
 
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./src\GroupDocs.Editor.UI.Api/out/*.nupkg --skip-duplicate --no-symbols true
+      run: dotnet nuget push ./src/GroupDocs.Editor.UI.Api/out/*.nupkg --skip-duplicate --no-symbols true
 
 
