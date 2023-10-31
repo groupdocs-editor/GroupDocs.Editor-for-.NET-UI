@@ -5,8 +5,6 @@ name: STG Publish GroupDocs.Editor.UI.Api
 
 on:
   workflow_dispatch:
-    branches:
-      - '!master'   # excludes master
 
 jobs:
   publish_stage:

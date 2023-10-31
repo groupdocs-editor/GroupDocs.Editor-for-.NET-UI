@@ -5,7 +5,6 @@ name: PROD Publish GroupDocs.Editor.UI.Api
 
 on:
   workflow_dispatch:
-    branches: [ "master" ]
 
 jobs:
   publish_stage:
