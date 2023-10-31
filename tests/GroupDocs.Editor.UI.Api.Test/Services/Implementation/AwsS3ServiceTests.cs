@@ -9,25 +9,28 @@ using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
 using GroupDocs.Editor.UI.Api.Test.SetupApp;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit.Abstractions;
 
 namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
 {
     public class AwsS3ServiceTests : IDisposable
-    {        
+    {
         private readonly AwsS3Storage _storage;
         private readonly AwsOptions _options;
         private readonly IdGeneratorService _idGeneratorService;
-
-        public AwsS3ServiceTests()
+        private readonly ITestOutputHelper _output;
+        public AwsS3ServiceTests(ITestOutputHelper output)
         {
+            _output = output;
             var awsConfiguration = TestConfigHelper.IConfiguration().BuildAwsTestOption();
 
             AmazonS3Client amazonS3Client = new AmazonS3Client(
-                awsConfiguration.AccessKey, 
-                awsConfiguration.SecretKey,
-                Amazon.RegionEndpoint.GetBySystemName(awsConfiguration.Region)
+                string.IsNullOrWhiteSpace(awsConfiguration.AccessKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_KEY") : awsConfiguration.AccessKey,
+                string.IsNullOrWhiteSpace(awsConfiguration.SecretKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_SECRETKEY") : awsConfiguration.SecretKey,
+                Amazon.RegionEndpoint.GetBySystemName(string.IsNullOrWhiteSpace(awsConfiguration.Region) ? Environment.GetEnvironmentVariable("EDITOR_AWS_REGION") : awsConfiguration.Region)
                 );
-            this._options = new AwsOptions { BucketName = awsConfiguration.Bucket };
+            this._options = new AwsOptions { BucketName = (string.IsNullOrWhiteSpace(awsConfiguration.Bucket) ? Environment.GetEnvironmentVariable("EDITOR_AWS_BUCKET") : awsConfiguration.Bucket) ?? "" };
+            _output.WriteLine("EDITOR_AWS_KEY is {0}", Environment.GetEnvironmentVariable("EDITOR_AWS_KEY"));
             this._idGeneratorService = new IdGeneratorService();
             this._storage = new AwsS3Storage(
                 amazonS3Client,
@@ -48,7 +51,8 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
             {
                 UploadOriginalRequest inputWrapper = new UploadOriginalRequest()
                 {
-                    DocumentInfo = new StorageDocumentInfo() {
+                    DocumentInfo = new StorageDocumentInfo()
+                    {
                         Format = GroupDocs.Editor.Formats.WordProcessingFormats.FromExtension(filename),
                         IsEncrypted = false,
                         PageCount = 1,
@@ -104,9 +108,11 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
                         PageCount = 1,
                         Size = 100500
                     },
-                    FileContent = new FileContent() { 
-                        FileName = folderPrefix + wordFilename, 
-                        ResourceStream = wordStream }
+                    FileContent = new FileContent()
+                    {
+                        FileName = folderPrefix + wordFilename,
+                        ResourceStream = wordStream
+                    }
                 };
                 UploadOriginalRequest excelUploadWrapper = new UploadOriginalRequest()
                 {
@@ -134,7 +140,7 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
             deletionResult.IsSuccess.Should().BeTrue();
             deletionResult.Status.Should().Be(StorageActionStatus.Success);
 
-            
+
         }
 
         [Fact]
