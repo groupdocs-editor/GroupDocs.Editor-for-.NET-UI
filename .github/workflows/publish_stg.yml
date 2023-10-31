@@ -18,9 +18,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-        source-url: https:\\apiint.nugettest.org\v3\index.json
-      env:
-          NUGET_AUTH_TOKEN: ${{secrets.NUGET_TOKEN_STG}}
     - name: Restore dependencies
       run: dotnet restore
     - name: Build solution and generate NuGet package
@@ -40,4 +37,4 @@ jobs:
     - name: Remove cert
       run: rm ${{secrets.PFX_PATH}}
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push .\src\GroupDocs.Editor.UI.Api\out\*.nupkg --api-key "${{secrets.NUGET_TOKEN_STG}}" --source https:\\apiint.nugettest.org\v3\index.json --skip-duplicate --no-symbols true
+      run: dotnet nuget push .\src\GroupDocs.Editor.UI.Api\out\*.nupkg --api-key "${{secrets.NUGET_TOKEN_STG}}" --source https://apiint.nugettest.org/v3/index.json --skip-duplicate --no-symbols true
