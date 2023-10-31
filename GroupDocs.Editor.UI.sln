@@ -18,6 +18,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_workflow", "_workflow", "{69866766-23A3-44BE-BAD5-DFFEDBA143C8}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build_packages.yml = .github\workflows\build_packages.yml
+		.github\workflows\publish_prod.yml = .github\workflows\publish_prod.yml
+		.github\workflows\publish_stg.yml = .github\workflows\publish_stg.yml
 		.github\workflows\Test_linux.yml = .github\workflows\Test_linux.yml
 		.github\workflows\Test_windows-latest.yml = .github\workflows\Test_windows-latest.yml
 	EndProjectSection
