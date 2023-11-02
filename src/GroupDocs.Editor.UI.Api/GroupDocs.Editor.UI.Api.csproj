@@ -14,6 +14,7 @@
 	  <PackageReadmeFile>README.md</PackageReadmeFile>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageIcon>images\icon.png</PackageIcon>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="images\icon.png" />

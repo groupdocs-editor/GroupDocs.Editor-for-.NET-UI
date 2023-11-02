@@ -17,10 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\GroupDocs.Editor.UI.Api\GroupDocs.Editor.UI.Api.csproj" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+    <PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.3-stg" />
   </ItemGroup>
 </Project>
