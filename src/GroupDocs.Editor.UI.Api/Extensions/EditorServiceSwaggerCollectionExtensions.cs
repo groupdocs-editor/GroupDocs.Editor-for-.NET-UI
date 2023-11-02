@@ -1,8 +1,6 @@
-﻿using GroupDocs.Editor.UI.Api.Services.Implementation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Reflection;
 
 namespace GroupDocs.Editor.UI.Api.Extensions;
 
@@ -30,10 +28,7 @@ public static class EditorServiceSwaggerCollectionExtensions
                 TermsOfService = new Uri("https://about.groupdocs.com/legal/terms-of-use/"),
                 License = new OpenApiLicense { Name = "Metered licenses", Url = new Uri("https://docs.groupdocs.com/editor/net/licensing-and-subscription/") }
             });
-        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlFilename2 = $"{typeof(EditorService).Assembly.GetName().Name}.xml";
-        swaggerGenOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-        swaggerGenOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename2));
+
         setupAction ??= _ => { };
         setupAction.Invoke(swaggerGenOptions);
         services.AddSwaggerGen(setupAction);
