@@ -1,4 +1,4 @@
-# UI for GroupDocs.Editor for .NET
+# Exploring the UI for GroupDocs.Editor for .NET
 
 ![Build Packages](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/build_packages.yml/badge.svg)
 ![Test ubuntu-latest](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/Test_linux.yml/badge.svg)
@@ -6,21 +6,25 @@
 ![Nuget](https://img.shields.io/nuget/v/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
 ![Nuget](https://img.shields.io/nuget/dt/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
 
-![GroupDocs.Editor.UI](./doc/images/editor.ui.png)
+GroupDocs.Editor UI is an essential interface that complements [GroupDocs.Editor for .NET](https://products.groupdocs.com/editor/net), offering a feature-rich platform for displaying a wide range of popular Word document formats (such as DOC, DOCX, RTF, ODT, and more) directly within a web browser. This article will provide insights into the capabilities and resources offered by the GroupDocs.Editor for .NET UI. You can find the primary repository for this UI interface at [GroupDocs.Editor-for-.NET-UI](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI).
 
-GroupDocs.Editor UI is a rich UI interface that designed to work in conjunction with [GroupDocs.Editor for .NET](https://products.groupdocs.com/editor/net) to display most popular Word documents (DOC, DOCX, RTF, ODT etc) formats in a browser.
+## Overview of GroupDocs.Editor.UI
 
-To integrate GroupDocs.Editor UI in your ASP.NET Core project you just need to add services and middlewares into your `Startup` class that provided in `GroupDocs.Editor.UI` .
+GroupDocs.Editor UI is designed to seamlessly collaborate with GroupDocs.Editor for .NET, extending the document processing capabilities for .NET applications. It delivers an interactive interface, enabling users to view and edit Word documents from various formats directly within a web browser.
 
-Include packages in your project:
+## Repository Highlights
+
+### 1. Creating a Web API App
+
+The GroupDocs.Editor.UI repository provides the code for creating a Web API app using the NuGet package `GroupDocs.Editor.UI.Api`. You can install this package using the following PowerShell command:
 
 ```PowerShell
 dotnet add package GroupDocs.Editor.UI.Api
 ```
 
-Add configuration to your `Startup` class:
+To integrate this package into your ASP.NET Core project, add the necessary services and middlewares in your `Startup` class, as demonstrated below:
 
-```cs
+```csharp
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -29,56 +33,34 @@ builder.Services.AddEditorSwagger();
 builder.Services.AddEditor<LocalStorage>(builder.Configuration);
 ```
 
-## UI
+## User Interface (UI)
 
-The UI is Angular application that is build upon [@groupdocs/groupdocs.editor.angular.ui-wordprocessing
-](https://www.npmjs.com/package/@groupdocs/groupdocs.editor.angular.ui-wordprocessing) package. 
+The UI is an Angular application built on top of the [`@groupdocs/groupdocs.editor.angular.ui-wordprocessing`](https://www.npmjs.com/package/@groupdocs/groupdocs.editor.angular.ui-wordprocessing) package. The example can be found here: [GroupDocs.Editor.UI.SpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.SpaSample).
 
+## API Integration
 
-## API
-
-The API is used to serve content such as to open, view, edit content, and save Word documents. The API can be hosted in the same or a separate application. The following API implementations available at the moment:
+The API is a critical component used to serve content, allowing users to open, view, edit, and save Word documents. The API can be hosted within the same application or in a separate one. Currently, the following API implementations are available:
 
 - [GroupDocs.Editor.UI.Api](dotnet add package GroupDocs.Editor.UI.Api)
 
-All the API implementations are extensions of `IMvcBuilder`:
+All API implementations are extensions of `IMvcBuilder`.
 
+## Licensing
 
-GroupDocs.Editor for .NET requires license to skip [trial limitations](https://docs.groupdocs.com/editor/net/evaluation-limitations-and-licensing-of-groupdocs-editor/). A temporary license can be requested at [Get a Temporary License](https://purchase.groupdocs.com/temporary-license).
-
-Use the following code to set a license in the appsetting.json:
+To utilize GroupDocs.Editor for .NET without trial limitations, you need a valid license. Temporary licenses can be obtained from [Get a Temporary License](https://purchase.groupdocs.com/temporary-license). Here's how you can set a license in the `appsettings.json` file:
 
 ```json
 "LicenseOptions": {
-    "Type": 1, // see posible option bellow
+    "Type": 1,
     "Source": "https://docs.groupdocs.com/editor/net/licensing-and-subscription/"
-  },
-```
-
-```cs
-public enum LicenseSourceType
-{
-    /// <summary>
-    /// The license stored locally.
-    /// </summary>
-    LocalPath = 0,
-
-    /// <summary>
-    /// The license stored remote and we should reed it by URL
-    /// </summary>
-    RemoteUrl = 1,
-
-    /// <summary>
-    /// The license stored base64 string
-    /// </summary>
-    Base64 = 2,
 }
 ```
 
+The `Type` field corresponds to different license sources, including local path, remote URL, and base64 string.
 
-#### Linux dependencies
+## Linux Dependencies
 
-When running API on Linux or in Docker the following packages have to be installed:
+When running the API on Linux or in a Docker container, specific packages need to be installed, as shown below:
 
 ```bash
 RUN apt-get update && apt-get install -y libgdiplus
@@ -88,44 +70,58 @@ RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
 RUN fc-cache -f -v
 ```
 
-### Amazon S3 Storage
+## Amazon S3 Storage
 
-```cs
+For those who prefer Amazon S3 for file storage, you can configure it by adding the following service in your `Startup` class:
+
+```csharp
 builder.Services.AddEditor<AwsS3Storage>(builder.Configuration);
 ```
 
-specify option in the appsetting.json for file storage folder
+Specify the options in the `appsettings.json` for file storage folder:
 
 ```json
 "AWS": {
     "Profile": "s3-dotnet-demo",
     "Region": "us-west-2",
     "BucketName": "groupDocs-editor-files"
-  },
+}
 ```
 
+## API Storage Providers
 
-#### API Storage Providers
+If you opt for local storage, use the following code to set up a local file storage provider:
 
-```cs
+```csharp
 builder.Services.AddEditor<LocalStorage>(builder.Configuration);
 ```
 
-specify option in the appsetting.json for file storage folder and base url for read files
+In the `appsettings.json`, you can specify the root folder for file storage and the base URL for reading files:
 
 ```json
 "LocalStorageOptions": {
     "RootFolder": "pathToStorage",
     "BaseUrl": "https://yourBaseUrl"
-  },
+}
 ```
-
-
 
 ## Contributing
 
-Your contributions are welcome when you want to make the project better by adding new feature, improvement or a bug-fix.
+Contributions are encouraged to improve the project by adding new features, making enhancements, or fixing bugs. Here are the key steps to follow when contributing:
 
-1. Read and follow the [Don't push your pull requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/)
-2. Follow the code guidelines and conventions.
-3. Make sure to describe your pull requests well and add documentation.
+1. Familiarize yourself with the [Don't push your pull requests](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/) guideline.
+2. Adhere to the code guidelines and conventions.
+3. Ensure that your pull requests are well-documented and describe the changes thoroughly.
+
+With these guidelines in mind, you can actively contribute to the enhancement and development of the GroupDocs.Editor.UI for .NET project.
+
+GroupDocs.Editor UI for .NET enhances document editing capabilities and provides a seamless user experience for developers and end-users alike. Whether you're building web applications, exploring storage options, or extending the capabilities of your .NET application, GroupDocs.Editor.UI offers a rich interface that simplifies document editing and processing tasks.
+
+To learn more about GroupDocs and access additional resources, please visit the following links:
+
+- **Website:** [www.groupdocs.com](http://www.groupdocs.com)
+- **Product Home:** [GroupDocs.Editor](https://products.groupdocs.com/editor)
+- **Download:** [Download GroupDocs.Editor](http://downloads.groupdocs.com/editor)
+- **Free Support Forum:** [GroupDocs.Editor Free Support Forum](https://forum.groupdocs.com/c/editor)
+- **Paid Support Helpdesk:** [GroupDocs.Editor Paid Support Helpdesk](https://helpdesk.groupdocs.com)
+- **Blog:** [GroupDocs.Editor Blog](https://blog.groupdocs.com/category/groupdocs-editor-product-family/)
