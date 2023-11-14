@@ -1,12 +1,12 @@
 # Building a Document Editing SPA with GroupDocs.Editor.UI.Api and groupdocs.editor.angular.ui-wordprocessing
 
-The **GroupDocs.Editor.UI.ReactSpaSample** is a powerful demonstration of how to effectively use **GroupDocs.Editor.UI.Api** in conjunction with **groupdocs.editor.angular.ui-wordprocessing** as a Document Editor. This Single Page Application (SPA) encompasses a RESTful API and an Angular-based user interface, making it a robust solution for document editing. You can explore the configuration details and resources related to this project in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository.
+The **GroupDocs.Editor.UI.ReactSpaSample** demonstrates how to effectively use the **GroupDocs.Editor.UI.Api** in conjunction with the **groupdocs.editor.angular.ui-wordprocessing** as a Document Editor. This Single Page Application (SPA) integrates a RESTful API and an Angular-based user interface, making it a robust solution for document editing. You can explore the configuration details and resources related to this project in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository.
 
 ![Editor show](docs/editor.ui.png)
 
 ## Overview
 
-**GroupDocs.Editor.UI.ReactSpaSample** is designed to provide developers with a clear example of how to build a web application for document editing using the following technologies:
+**GroupDocs.Editor.UI.ReactSpaSample** provides a clear example of how to build a web application for document editing using the following technologies:
 
 - **GroupDocs.Editor.UI.Api**: This RESTful API is responsible for serving content, including opening, viewing, editing, and saving Word documents. It is the backbone of the document editing capabilities.
 
@@ -18,9 +18,9 @@ To get started with this project, follow these steps:
 
 1. **Clone the Repository**: Clone the **GroupDocs.Editor.UI.ReactSpaSample** repository to your local development environment.
 
-2. **Configuration**: Configure the necessary settings by referring to the details provided in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository. These settings include specifying the licensing type and source for GroupDocs.Editor for .NET.
+2. **Configuration**: Configure the necessary settings by referring to the details provided in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository. These settings include specifying the licensing type and source for the GroupDocs.Editor for .NET library.
 
-3. **Install Dependencies**: Navigate to the project directory and install the required dependencies using npm or yarn:
+3. **Install Dependencies**: Navigate to the project directory and install the required dependencies using the `npm` or `yarn` package managers:
 
    ```bash
    npm install
@@ -36,7 +36,7 @@ To get started with this project, follow these steps:
    yarn start
    ```
 
-The application should now be accessible, allowing you to perform document editing with the integrated groupdocs.editor.angular.ui-wordprocessing and the GroupDocs.Editor.UI.Api.
+The application should now be accessible, allowing you to perform document editing with the integrated **groupdocs.editor.angular.ui-wordprocessing** as UI and the **GroupDocs.Editor.UI.Api** as underlying API.
 
 ## Features and Functionality
 
