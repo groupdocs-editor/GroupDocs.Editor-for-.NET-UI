@@ -55,7 +55,7 @@ public class EditorServiceTests
 
         // Assert
         result.PageCount.Should().Be(1);
-        result.Size.Should().Be(2911864);
+        result.Size.Should().Be(12388);
         result.Format.Should().Be(WordProcessingFormats.Docx);
         result.IsEncrypted.Should().BeFalse();
         _mockRepository.VerifyAll();
@@ -238,7 +238,7 @@ public class EditorServiceTests
         _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.WordProcessing.GetFileName())))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         // Act
-        using var result = await service.SaveToPdf(new DownloadPdfRequest()
+        using var result = await service.SaveToPdf(new DownloadPdfRequest
         {
             DocumentCode = documentCode,
             LoadOptions = loadOptions,

@@ -91,7 +91,7 @@ public class LocalStorageTests : IDisposable
     }
 
     [Fact]
-    public void RemoveFolder()
+    public async Task RemoveFolder()
     {
         // Arrange
         var localStorage = CreateLocalStorage();
@@ -99,7 +99,7 @@ public class LocalStorageTests : IDisposable
         const string folderSubPath = "toDelete";
 
         // Act
-        var result = localStorage.RemoveFolder(folderSubPath);
+        var result = await localStorage.RemoveFolder(folderSubPath);
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);
@@ -107,15 +107,15 @@ public class LocalStorageTests : IDisposable
     }
 
     [Fact]
-    public void RemoveFile()
+    public async Task RemoveFile()
     {
         // Arrange
         var localStorage = CreateLocalStorage();
         var path = Path.Combine("files", "toDelete.txt");
-        File.WriteAllText(path, "test");
+        await File.WriteAllTextAsync(path, "test");
 
         // Act
-        var result = localStorage.RemoveFile("toDelete.txt");
+        var result = await localStorage.RemoveFile("toDelete.txt");
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);

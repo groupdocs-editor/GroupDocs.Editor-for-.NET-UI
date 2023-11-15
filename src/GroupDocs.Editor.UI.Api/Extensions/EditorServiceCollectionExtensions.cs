@@ -1,5 +1,4 @@
-﻿using Amazon.S3;
-using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
+﻿using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
 using GroupDocs.Editor.UI.Api.JsonConverters;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
@@ -39,7 +38,6 @@ public static class EditorServiceCollectionExtensions
     public static IServiceCollection AddEditorTrial<T>(
         this IServiceCollection services, IConfiguration configuration) where T : IStorage
     {
-        services.AddFeatureManagement(configuration.GetSection("EditorProductFamily"));
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
@@ -48,32 +46,51 @@ public static class EditorServiceCollectionExtensions
         services.AddScoped(typeof(IStorage), typeof(T));
         if (typeof(T) == typeof(AwsS3Storage))
         {
-            services.AddDefaultAWSOptions(configuration.GetAWSOptions());
-            services.AddAWSService<IAmazonS3>();
             services.Configure<AwsOptions>(configuration.GetSection("AWS"));
-
         }
 
         if (typeof(T) == typeof(LocalStorage))
         {
             services.Configure<LocalStorageOptions>(configuration.GetSection(nameof(LocalStorageOptions)));
         }
+        if (typeof(T) == typeof(AzureBlobStorage))
+        {
+            services.Configure<AzureBlobOptions>(configuration.GetSection(nameof(AzureBlobOptions)));
+        }
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the editor controllers with default JsonSerializerOptions.
     /// </summary>
     /// <param name="services">The services.</param>
+    /// <param name="configuration"></param>
     /// <param name="jsonOption">The json option.</param>
     /// <param name="mvcOption">The MVC option.</param>
     /// <returns></returns>
     public static IServiceCollection AddEditorControllers(
-        this IServiceCollection services, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
+        this IServiceCollection services, IConfiguration configuration, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
     {
+        IMvcBuilder mvcBuilder;
+        services.AddFeatureManagement();
 
-        IMvcBuilder mvcBuilder = mvcOption != null ? services.AddControllers(mvcOption) : services.AddControllers();
+        var featureManager = services.BuildServiceProvider().GetRequiredService<IFeatureManager>();
+        if (mvcOption == null)
+        {
+            mvcBuilder = services.AddControllers(opt =>
+            {
+                opt.Conventions.Add(new ActionHidingConvention(featureManager));
+            });
+        }
+        else
+        {
+            MvcOptions options = new MvcOptions();
+            mvcOption.Invoke(options);
+            mvcBuilder = services.AddControllers(mvcOption);
+        }
+
         if (jsonOption == null)
         {
             mvcBuilder.AddJsonOptions(option =>
@@ -93,11 +110,4 @@ public static class EditorServiceCollectionExtensions
 
         return services;
     }
-}
-
-public static class EditorProductFamily
-{
-    public const string WordProcessing = "WordProcessing";
-    public const string Fixed = "Fixed";
-    public const string Presentation = "Presentation";
 }

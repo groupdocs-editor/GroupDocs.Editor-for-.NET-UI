@@ -25,5 +25,5 @@ public interface IEditorService
 
     public Task<FileContent?> ConvertToDocument(DownloadDocumentRequest request);
 
-    public IEnumerable<IDocumentFormat> GetSupportedFormats();
+    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : IDocumentFormat;
 }

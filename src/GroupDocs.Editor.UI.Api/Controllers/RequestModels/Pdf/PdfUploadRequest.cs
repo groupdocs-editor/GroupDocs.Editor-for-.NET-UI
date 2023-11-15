@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 
-public class UploadWordProcessingRequest
+public class PdfUploadRequest
 {
     /// <summary>
     /// Gets or sets the file.
@@ -22,7 +22,7 @@ public class UploadWordProcessingRequest
     /// The load options.
     /// </value>
     [Required]
-    public WordProcessingLoadOptions LoadOptions { get; set; }
+    public PdfLoadOptions LoadOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the edit options.
@@ -31,5 +31,5 @@ public class UploadWordProcessingRequest
     /// The edit options.
     /// </value>
     [Required]
-    public WordProcessingEditOptions EditOptions { get; set; }
+    public PdfEditOptions EditOptions { get; set; }
 }

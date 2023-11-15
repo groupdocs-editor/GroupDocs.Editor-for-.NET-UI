@@ -1,19 +1,19 @@
 ﻿using GroupDocs.Editor.Options;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 
-public class PdfDownloadRequest
+public class WordProcessingUploadRequest
 {
     /// <summary>
-    /// Gets or sets the document code.
+    /// Gets or sets the file.
     /// </summary>
     /// <value>
-    /// The document code.
+    /// The file.
     /// </value>
     [Required]
-    [FromQuery] public Guid DocumentCode { get; set; }
+    public IFormFile File { get; set; }
 
     /// <summary>
     /// Gets or sets the load options.
@@ -25,11 +25,11 @@ public class PdfDownloadRequest
     public WordProcessingLoadOptions LoadOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the save options.
+    /// Gets or sets the edit options.
     /// </summary>
     /// <value>
-    /// The save options.
+    /// The edit options.
     /// </value>
     [Required]
-    public PdfSaveOptions SaveOptions { get; set; }
+    public WordProcessingEditOptions EditOptions { get; set; }
 }

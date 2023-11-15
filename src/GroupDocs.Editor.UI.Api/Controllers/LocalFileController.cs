@@ -1,13 +1,17 @@
+using GroupDocs.Editor.UI.Api.Extensions;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
+using Microsoft.FeatureManagement.Mvc;
 using System.Web;
 
 namespace GroupDocs.Editor.UI.Api.Controllers;
 
 [ApiController]
+[FeatureGate(EditorProductFamily.LocalFile)]
+[ApiExplorerSettings(GroupName = EditorProductFamily.LocalFile)]
 [Route("file/{documentCode:guid}")]
 public class LocalFileController : ControllerBase
 {

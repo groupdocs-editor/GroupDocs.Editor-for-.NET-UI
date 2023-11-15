@@ -4,6 +4,7 @@ using GroupDocs.Editor.Formats;
 using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
@@ -54,7 +55,7 @@ public class WordProcessingControllerTests
         await using var stream = new MemoryStream();
         IFormFile file = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
 
-        UploadWordProcessingRequest fileRequest = new()
+        WordProcessingUploadRequest fileRequest = new()
         {
             EditOptions = new(true),
             LoadOptions = new(),
@@ -186,7 +187,7 @@ public class WordProcessingControllerTests
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        PreviewRequest request = new PreviewRequest()
+        PreviewRequest request = new PreviewRequest
         {
             DocumentCode = Guid.NewGuid(),
             LoadOptions = new WordProcessingLoadOptions()
@@ -201,7 +202,7 @@ public class WordProcessingControllerTests
             {
                 { 0, subFile },
             },
-            PreviewImages = new Dictionary<int, StorageFile>() { { 0, previewFile } }
+            PreviewImages = new Dictionary<int, StorageFile> { { 0, previewFile } }
         };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(request.DocumentCode)).ReturnsAsync(meteFile);
         // Act
@@ -213,7 +214,7 @@ public class WordProcessingControllerTests
         data.Should().NotBeNull();
         var response = data?.Value as Dictionary<int, StorageFile>;
         response.Should().NotBeNull();
-        response.Should().BeEquivalentTo(new Dictionary<int, StorageFile>() { { 0, previewFile } });
+        response.Should().BeEquivalentTo(new Dictionary<int, StorageFile> { { 0, previewFile } });
         _mockRepository.VerifyAll();
     }
 

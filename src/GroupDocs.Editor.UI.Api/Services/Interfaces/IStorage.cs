@@ -10,8 +10,8 @@ public interface IStorage
 {
     public Task<IEnumerable<StorageResponse<StorageMetaFile>>> UploadFiles(IEnumerable<UploadOriginalRequest> files);
     public Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, Guid documentCode, string subIndex = "");
-    public StorageResponse RemoveFolder(string folderSubPath);
-    public StorageResponse RemoveFile(string fileSubPath);
+    public Task<StorageResponse> RemoveFolder(string folderSubPath);
+    public Task<StorageResponse> RemoveFile(string fileSubPath);
     public Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath);
     Task<StorageResponse<string>> GetFileText(string fileSubPath);
     Task<StorageResponse<StorageSubFile>> UpdateHtmlContent(StorageSubFile currentContent, string htmlContents);

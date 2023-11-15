@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 
 /// <summary>
 /// Request for Downloads a specific document in the target format.
 /// </summary>
-public class WordProcessingDownloadRequest
+public class PdfDownloadRequest
 {
     /// <summary>
     /// Gets or sets the document code.
@@ -34,7 +34,7 @@ public class WordProcessingDownloadRequest
     /// The load options.
     /// </value>
     [Required]
-    public WordProcessingLoadOptions LoadOptions { get; set; }
+    public PdfLoadOptions LoadOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the save options.
@@ -43,5 +43,5 @@ public class WordProcessingDownloadRequest
     /// The save options.
     /// </value>
     [Required]
-    public WordProcessingSaveOptions SaveOptions { get; set; }
+    public PdfSaveOptions SaveOptions { get; set; }
 }

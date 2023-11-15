@@ -40,7 +40,7 @@ public class EditorService : IEditorService, IDisposable
     public IDocumentInfo GetDocumentInfo(Stream stream, ILoadOptions loadOptions)
     {
         CreateEditorIfNotExist(stream, loadOptions);
-        return _editor!.GetDocumentInfo(loadOptions.Password);
+        return _editor!.GetDocumentInfo(loadOptions?.Password ?? null);
     }
 
     public async Task<IDocumentInfo> GetDocumentInfo(StorageMetaFile meta, ILoadOptions loadOptions)
@@ -254,9 +254,21 @@ public class EditorService : IEditorService, IDisposable
         return new FileContent { FileName = $"{Path.GetFileNameWithoutExtension(metaFile.OriginalFile.FileName)}.{request.Format}", ResourceStream = outputStream };
     }
 
-    public IEnumerable<IDocumentFormat> GetSupportedFormats()
+    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : IDocumentFormat
     {
-        return WordProcessingFormats.All.Cast<IDocumentFormat>().GroupBy(a => a.Extension).Select(a => a.First());
+        if (typeof(TFormat) == typeof(WordProcessingFormats))
+        {
+            return WordProcessingFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
+        }
+        if (typeof(TFormat) == typeof(PresentationFormats))
+        {
+            return PresentationFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
+        }
+        if (typeof(TFormat) == typeof(SpreadsheetFormats))
+        {
+            return SpreadsheetFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
+        }
+        return WordProcessingFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
     }
     public void Dispose()
     {
@@ -334,12 +346,19 @@ public class EditorService : IEditorService, IDisposable
         return EditableDocument.FromMarkup(response.Response, resources);
     }
 
-    private void CreateEditorIfNotExist(Stream stream, ILoadOptions loadOptions)
+    private void CreateEditorIfNotExist(Stream stream, ILoadOptions? loadOptions)
     {
-        _editor ??= new Editor(delegate { return stream; }, delegate { return loadOptions; });
+        if (loadOptions == null)
+        {
+            _editor ??= new Editor(delegate { return stream; });
+        }
+        else
+        {
+            _editor ??= new Editor(delegate { return stream; }, delegate { return loadOptions; });
+        }
     }
 
-    private async Task CreateEditorIfNotExist(StorageMetaFile meta, ILoadOptions loadOptions)
+    private async Task CreateEditorIfNotExist(StorageMetaFile meta, ILoadOptions? loadOptions)
     {
         if (_editor == null)
         {
@@ -352,7 +371,14 @@ public class EditorService : IEditorService, IDisposable
             }
 
             _originalFIleStream = response.Response;
-            _editor = new Editor(delegate { return _originalFIleStream; }, delegate { return loadOptions; });
+            if (loadOptions == null)
+            {
+                _editor ??= new Editor(delegate { return _originalFIleStream; });
+            }
+            else
+            {
+                _editor = new Editor(delegate { return _originalFIleStream; }, delegate { return loadOptions; });
+            }
         }
     }
 }

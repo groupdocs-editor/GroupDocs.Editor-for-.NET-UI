@@ -7,8 +7,12 @@ namespace GroupDocs.Editor.UI.Api.Models.Storage;
 
 public class StorageDocumentInfo : IDocumentInfo
 {
+    public string FamilyFormat { get; set; }
+
     public int PageCount { get; set; }
+
     public long Size { get; set; }
+
     public bool IsEncrypted { get; set; }
 
     [JsonConverter(typeof(FormatJsonConverter))]

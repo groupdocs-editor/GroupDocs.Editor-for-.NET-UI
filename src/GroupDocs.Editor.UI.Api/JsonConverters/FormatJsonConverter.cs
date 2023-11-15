@@ -11,7 +11,18 @@ public class FormatJsonConverter : JsonConverter<IDocumentFormat>
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        return WordProcessingFormats.FromExtension(reader.GetString());
+        var text = reader.GetString();
+        if (WordProcessingFormats.All.Any(a =>
+                string.Equals(a.Extension, text, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return WordProcessingFormats.FromExtension(reader.GetString());
+        }
+        if (FixedLayoutFormats.All.Any(a =>
+                string.Equals(a.Extension, text, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return FixedLayoutFormats.FromExtension(reader.GetString());
+        }
+        return WordProcessingFormats.Docx;
     }
 
     public override void Write(

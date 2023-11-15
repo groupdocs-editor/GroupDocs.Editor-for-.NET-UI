@@ -14,4 +14,7 @@
   <ItemGroup>
 	<ProjectReference Include="..\..\src\GroupDocs.Editor.UI.Api\GroupDocs.Editor.UI.Api.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="file2\" />
+  </ItemGroup>
 </Project>

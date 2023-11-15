@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddEditorControllers();
+builder.Services.AddEditorControllers(builder.Configuration);
 builder.Services.AddEditorSwagger();
 builder.Services.AddEditor<LocalStorage>(builder.Configuration);
 builder.Services.AddCors(p => p.AddPolicy("corsApp", policy =>
@@ -27,8 +27,7 @@ app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseEditorSwaggerUI();
 }
 
 app.UseHttpsRedirection();

@@ -1,7 +1,7 @@
 using AutoMapper;
 using GroupDocs.Editor.Formats;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
-using GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 using GroupDocs.Editor.UI.Api.Extensions;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
@@ -15,18 +15,18 @@ using Microsoft.FeatureManagement.Mvc;
 namespace GroupDocs.Editor.UI.Api.Controllers;
 
 [ApiController]
-[FeatureGate(EditorProductFamily.WordProcessing)]
+[FeatureGate(EditorProductFamily.Pdf)]
 [ApiExplorerSettings(GroupName = EditorProductFamily.WordProcessing)]
 [Route("[controller]")]
-public class WordProcessingController : ControllerBase
+public class PdfController : ControllerBase
 {
-    private readonly ILogger<WordProcessingController> _logger;
-    protected readonly IEditorService _editorService;
-    protected readonly IStorage _storage;
-    protected readonly IMetaFileStorageCache _storageCache;
-    protected readonly IMapper _mapper;
+    private readonly ILogger<PdfController> _logger;
+    private readonly IEditorService _editorService;
+    private readonly IStorage _storage;
+    private readonly IMetaFileStorageCache _storageCache;
+    private readonly IMapper _mapper;
 
-    public WordProcessingController(ILogger<WordProcessingController> logger, IEditorService editorService, IMapper mapper, IStorage storage, IMetaFileStorageCache storageCache)
+    public PdfController(ILogger<PdfController> logger, IEditorService editorService, IMapper mapper, IStorage storage, IMetaFileStorageCache storageCache)
     {
         _logger = logger;
         _editorService = editorService;
@@ -44,7 +44,7 @@ public class WordProcessingController : ControllerBase
     [HttpPost("Upload")]
     [ProducesResponseType(typeof(StorageMetaFile), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Upload([FromForm] WordProcessingUploadRequest file)
+    public async Task<IActionResult> Upload([FromForm] PdfUploadRequest file)
     {
         if (!ModelState.IsValid)
         {
@@ -69,7 +69,7 @@ public class WordProcessingController : ControllerBase
     [HttpPost("NewDocument")]
     [ProducesResponseType(typeof(StorageMetaFile), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> NewDocument(WordProcessingNewDocumentRequest file)
+    public async Task<IActionResult> NewDocument(PdfNewDocumentRequest file)
     {
         if (!ModelState.IsValid)
         {
@@ -94,7 +94,7 @@ public class WordProcessingController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Download(WordProcessingDownloadRequest request)
+    public async Task<IActionResult> Download(PdfDownloadRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -103,27 +103,6 @@ public class WordProcessingController : ControllerBase
 
         var result =
             await _editorService.ConvertToDocument(_mapper.Map<DownloadDocumentRequest>(request));
-        if (result == null)
-        {
-            return BadRequest("Cannot generate file for download");
-        }
-        new FileExtensionContentTypeProvider().TryGetContentType(result.FileName, out var contentType);
-
-        return File(result.ResourceStream, contentType ?? "application/octet-stream", result.FileName);
-    }
-
-    [HttpPost("DownloadPdf")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> DownloadPdf(WordToPdfDownloadRequest request)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ValidationState);
-        }
-
-        var result = await _editorService.SaveToPdf(_mapper.Map<DownloadPdfRequest>(request));
         if (result == null)
         {
             return BadRequest("Cannot generate file for download");
@@ -326,8 +305,7 @@ public class WordProcessingController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
     public IActionResult SupportedFormats()
     {
-        Dictionary<string, string> result = _editorService.GetSupportedFormats<WordProcessingFormats>()
-            .ToDictionary(format => format.Extension, format => format.Name);
+        Dictionary<string, string> result = new Dictionary<string, string> { { FixedLayoutFormats.Pdf.Extension, FixedLayoutFormats.Pdf.Name } };
         return Ok(result);
     }
 }

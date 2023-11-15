@@ -1,5 +1,4 @@
-﻿using Amazon.S3;
-using FluentAssertions;
+﻿using FluentAssertions;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Models.Storage.Requests;
@@ -9,7 +8,7 @@ using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
 using GroupDocs.Editor.UI.Api.Test.SetupApp;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit.Abstractions;
+using Moq;
 
 namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
 {
@@ -17,76 +16,77 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
     {
         private readonly AwsS3Storage _storage;
         private readonly AwsOptions _options;
-        private readonly IdGeneratorService _idGeneratorService;
-        private readonly ITestOutputHelper _output;
-        public AwsS3ServiceTests(ITestOutputHelper output)
-        {
-            _output = output;
-            var awsConfiguration = TestConfigHelper.IConfiguration().BuildAwsTestOption();
+        private readonly MockRepository _mockRepository;
+        private readonly Mock<IIdGeneratorService> _mockIdGeneratorService;
 
-            AmazonS3Client amazonS3Client = new AmazonS3Client(
-                string.IsNullOrWhiteSpace(awsConfiguration.AccessKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_KEY") : awsConfiguration.AccessKey,
-                string.IsNullOrWhiteSpace(awsConfiguration.SecretKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_SECRETKEY") : awsConfiguration.SecretKey,
-                Amazon.RegionEndpoint.GetBySystemName(string.IsNullOrWhiteSpace(awsConfiguration.Region) ? Environment.GetEnvironmentVariable("EDITOR_AWS_REGION") : awsConfiguration.Region)
-                );
-            this._options = new AwsOptions { BucketName = (string.IsNullOrWhiteSpace(awsConfiguration.Bucket) ? Environment.GetEnvironmentVariable("EDITOR_AWS_BUCKET") : awsConfiguration.Bucket) ?? "" };
-            _output.WriteLine("EDITOR_AWS_KEY is {0}", Environment.GetEnvironmentVariable("EDITOR_AWS_KEY"));
-            this._idGeneratorService = new IdGeneratorService();
-            this._storage = new AwsS3Storage(
-                amazonS3Client,
+        public AwsS3ServiceTests()
+        {
+            _mockRepository = new MockRepository(MockBehavior.Strict);
+            _mockIdGeneratorService = _mockRepository.Create<IIdGeneratorService>();
+            var awsConfiguration = TestConfigHelper.IConfiguration().BuildAwsTestOption();
+            _options = new()
+            {
+                Bucket = (string.IsNullOrWhiteSpace(awsConfiguration.Bucket) ? Environment.GetEnvironmentVariable("EDITOR_AWS_BUCKET") : awsConfiguration.Bucket) ?? "",
+                AccessKey = (string.IsNullOrWhiteSpace(awsConfiguration.AccessKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_KEY") : awsConfiguration.AccessKey) ?? "",
+                LinkExpiresDays = 1,
+                Profile = "",
+                Region = (string.IsNullOrWhiteSpace(awsConfiguration.Region) ? Environment.GetEnvironmentVariable("EDITOR_AWS_REGION") : awsConfiguration.Region) ?? "",
+                RootFolderName = "groupdocseditorui",
+                SecretKey = (string.IsNullOrWhiteSpace(awsConfiguration.SecretKey) ? Environment.GetEnvironmentVariable("EDITOR_AWS_SECRETKEY") : awsConfiguration.SecretKey) ?? ""
+            };
+            _storage = new AwsS3Storage(
                 new NullLogger<AwsS3Storage>(),
-                 this._idGeneratorService,
-                 Microsoft.Extensions.Options.Options.Create(this._options)
+                 _mockIdGeneratorService.Object,
+                 Microsoft.Extensions.Options.Options.Create(_options)
                 );
         }
 
         [Fact]
-        public async void UploadDownloadRemoveOneFile()
+        public async Task UploadDownloadRemoveOneFile()
         {
             const string filename = "WordProcessing.docx";
             string filePath = Path.Combine("TestFiles", filename);
             File.Exists(filePath).Should().BeTrue();
-
-            using (FileStream file = File.OpenRead(filePath))
+            Guid code = Guid.NewGuid();
+            _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(code);
+            await using FileStream file = File.OpenRead(filePath);
+            UploadOriginalRequest inputWrapper = new()
             {
-                UploadOriginalRequest inputWrapper = new UploadOriginalRequest()
+                DocumentInfo = new StorageDocumentInfo
                 {
-                    DocumentInfo = new StorageDocumentInfo()
-                    {
-                        Format = GroupDocs.Editor.Formats.WordProcessingFormats.FromExtension(filename),
-                        IsEncrypted = false,
-                        PageCount = 1,
-                        Size = 100500
-                    },
-                    FileContent = new FileContent() { FileName = filename, ResourceStream = file }
-                };
-                List<UploadOriginalRequest> inputWrapperList = new List<UploadOriginalRequest>(1) { inputWrapper };
-                IEnumerable<StorageResponse<StorageMetaFile>> result = await this._storage.UploadFiles(inputWrapperList);
-                result.Should().NotBeNullOrEmpty().And.HaveCount(1);
-            }
+                    Format = Formats.WordProcessingFormats.FromExtension(filename),
+                    IsEncrypted = false,
+                    PageCount = 1,
+                    Size = 100500
+                },
+                FileContent = new FileContent { FileName = filename, ResourceStream = file }
+            };
+            List<UploadOriginalRequest> inputWrapperList = new(1) { inputWrapper };
 
-            using (StorageDisposableResponse<Stream> downloaded = await this._storage.DownloadFile(filename))
-            {
-                downloaded.Should().NotBeNull();
-                downloaded.IsSuccess.Should().Be(true);
-                downloaded.Status.Should().Be(StorageActionStatus.Success);
-                downloaded.Response.Should().NotBeNull().And.BeOfType<MemoryStream>();
-                downloaded.Response.CanRead.Should().BeTrue();
-                downloaded.Response.CanSeek.Should().BeTrue();
-                downloaded.Response.Position.Should().BeGreaterThan(0);
-            }
+            IEnumerable<StorageResponse<StorageMetaFile>> result = await _storage.UploadFiles(inputWrapperList);
+            result.Should().NotBeNullOrEmpty().And.HaveCount(1);
+            _mockRepository.VerifyAll();
 
-            StorageResponse deletedStatus = this._storage.RemoveFile(filename);
+            using StorageDisposableResponse<Stream> downloaded = await _storage.DownloadFile($"{_options.RootFolderName}/{code}/{filename}");
+            downloaded.Should().NotBeNull();
+            downloaded.IsSuccess.Should().Be(true);
+            downloaded.Status.Should().Be(StorageActionStatus.Success);
+            downloaded.Response.Should().NotBeNull().And.BeAssignableTo<MemoryStream>();
+            downloaded.Response?.CanRead.Should().BeTrue();
+            downloaded.Response?.CanSeek.Should().BeTrue();
+            downloaded.Response?.Position.Should().BeGreaterThan(0);
+
+            StorageResponse deletedStatus = await _storage.RemoveFile($"{_options.RootFolderName}/{code}/{filename}");
             deletedStatus.Should().NotBeNull();
             deletedStatus.IsSuccess.Should().BeTrue();
             deletedStatus.Status.Should().Be(StorageActionStatus.Success);
         }
 
         [Fact]
-        public async void CreateAndRemoveFolder()
+        public async Task CreateAndRemoveFolder()
         {
             const string folderName = "Folder";
-            string folderPrefix = folderName + "/";
+            const string folderPrefix = folderName + "/";
 
             const string wordFilename = "WordProcessing.docx";
             string wordPath = Path.Combine("TestFiles", wordFilename);
@@ -95,47 +95,49 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
             const string excelFilename = "Spreadsheet.xlsx";
             string excelPath = Path.Combine("TestFiles", excelFilename);
             File.Exists(excelPath).Should().BeTrue();
-
-            using (FileStream wordStream = File.OpenRead(wordPath))
-            using (FileStream excelStream = File.OpenRead(excelPath))
+            Guid code = Guid.NewGuid();
+            _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(code);
+            await using (FileStream wordStream = File.OpenRead(wordPath))
+            await using (FileStream excelStream = File.OpenRead(excelPath))
             {
-                UploadOriginalRequest wordUploadWrapper = new UploadOriginalRequest()
+                UploadOriginalRequest wordUploadWrapper = new()
                 {
-                    DocumentInfo = new StorageDocumentInfo()
+                    DocumentInfo = new()
                     {
-                        Format = GroupDocs.Editor.Formats.WordProcessingFormats.FromExtension(wordFilename),
+                        Format = Formats.WordProcessingFormats.FromExtension(wordFilename),
                         IsEncrypted = false,
                         PageCount = 1,
                         Size = 100500
                     },
-                    FileContent = new FileContent()
+                    FileContent = new()
                     {
                         FileName = folderPrefix + wordFilename,
                         ResourceStream = wordStream
                     }
                 };
-                UploadOriginalRequest excelUploadWrapper = new UploadOriginalRequest()
+                UploadOriginalRequest excelUploadWrapper = new()
                 {
-                    DocumentInfo = new StorageDocumentInfo()
+                    DocumentInfo = new()
                     {
-                        Format = GroupDocs.Editor.Formats.SpreadsheetFormats.FromExtension(excelFilename),
+                        Format = Formats.SpreadsheetFormats.FromExtension(excelFilename),
                         IsEncrypted = false,
                         PageCount = 1,
                         Size = 100500
                     },
-                    FileContent = new FileContent()
+                    FileContent = new()
                     {
                         FileName = folderPrefix + excelFilename,
                         ResourceStream = excelStream
                     }
                 };
-                List<UploadOriginalRequest> inputWrapperList = new List<UploadOriginalRequest>(2) { wordUploadWrapper, excelUploadWrapper };
-                IEnumerable<StorageResponse<StorageMetaFile>> result = await this._storage.UploadFiles(inputWrapperList);
+
+                List<UploadOriginalRequest> inputWrapperList = new(2) { wordUploadWrapper, excelUploadWrapper };
+                IEnumerable<StorageResponse<StorageMetaFile>> result = await _storage.UploadFiles(inputWrapperList);
                 result.Should().NotBeNullOrEmpty().And.HaveCount(2);
 
             }
 
-            StorageResponse deletionResult = this._storage.RemoveFolder(folderName);
+            StorageResponse deletionResult = await _storage.RemoveFolder($"{_options.RootFolderName}/{code}/{folderName}");
             deletionResult.Should().NotBeNull();
             deletionResult.IsSuccess.Should().BeTrue();
             deletionResult.Status.Should().Be(StorageActionStatus.Success);
@@ -144,14 +146,14 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
         }
 
         [Fact]
-        public void RemoveNotExisting()
+        public async Task RemoveNotExisting()
         {
-            StorageResponse deletionNotExistantFolderResult = this._storage.RemoveFolder("Abcde_notExists");
+            StorageResponse deletionNotExistantFolderResult = await _storage.RemoveFolder("Abcde_notExists");
             deletionNotExistantFolderResult.Should().NotBeNull();
             deletionNotExistantFolderResult.IsSuccess.Should().BeFalse();
             deletionNotExistantFolderResult.Status.Should().Be(StorageActionStatus.NotExist);
 
-            StorageResponse detetionNotExistantFileResult = this._storage.RemoveFile("Abcd_NotExistantFile");
+            StorageResponse detetionNotExistantFileResult = await _storage.RemoveFile("Abcd_NotExistantFile");
             detetionNotExistantFileResult.Should().NotBeNull();
             detetionNotExistantFileResult.IsSuccess.Should().BeFalse();
             detetionNotExistantFileResult.Status.Should().Be(StorageActionStatus.NotExist);
@@ -161,14 +163,12 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
         public async void DownloadNotExistantFile()
         {
             const string filename = "Abcdef_NotExistantFilename";
-            using (StorageDisposableResponse<Stream> downloaded = await this._storage.DownloadFile(filename))
-            {
-                downloaded.Should().NotBeNull();
-                downloaded.IsSuccess.Should().BeFalse();
-                downloaded.Status.Should().Be(StorageActionStatus.NotExist);
-                downloaded.Response.Should().NotBeNull();
-                downloaded.Response.Should().BeSameAs(Stream.Null);
-            }
+            using StorageDisposableResponse<Stream> downloaded = await _storage.DownloadFile(filename);
+            downloaded.Should().NotBeNull();
+            downloaded.IsSuccess.Should().BeFalse();
+            downloaded.Status.Should().Be(StorageActionStatus.NotExist);
+            downloaded.Response.Should().NotBeNull();
+            downloaded.Response.Should().BeSameAs(Stream.Null);
         }
 
         [Fact]
@@ -178,68 +178,67 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
             string wordPath = Path.Combine("TestFiles", wordFilename);
             File.Exists(wordPath).Should().BeTrue();
 
-            using (FileStream wordStream = File.OpenRead(wordPath))
+            await using FileStream wordStream = File.OpenRead(wordPath);
+            wordStream.Position.Should().Be(0);
+            wordStream.CanSeek.Should().BeTrue();
+            wordStream.CanRead.Should().BeTrue();
+
+            UploadOriginalRequest wordUploadWrapper = new()
             {
-                wordStream.Position.Should().Be(0);
-                wordStream.CanSeek.Should().BeTrue();
-                wordStream.CanRead.Should().BeTrue();
-
-                UploadOriginalRequest wordUploadWrapper = new UploadOriginalRequest()
+                DocumentInfo = new StorageDocumentInfo
                 {
-                    DocumentInfo = new StorageDocumentInfo()
-                    {
-                        Format = GroupDocs.Editor.Formats.WordProcessingFormats.FromExtension(wordFilename),
-                        IsEncrypted = false,
-                        PageCount = 1,
-                        Size = 100500
-                    },
-                    FileContent = new FileContent()
-                    {
-                        FileName = wordFilename,
-                        ResourceStream = wordStream
-                    }
-                };
+                    Format = Formats.WordProcessingFormats.FromExtension(wordFilename),
+                    IsEncrypted = false,
+                    PageCount = 1,
+                    Size = 100500
+                },
+                FileContent = new FileContent
+                {
+                    FileName = wordFilename,
+                    ResourceStream = wordStream
+                }
+            };
+            Guid code = Guid.NewGuid();
+            _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(code);
+            List<UploadOriginalRequest> inputWrapperList = new(1) { wordUploadWrapper };
+            IEnumerable<StorageResponse<StorageMetaFile>> result = await _storage.UploadFiles(inputWrapperList);
+            var storageResponses = result.ToList();
+            storageResponses.Should().NotBeNullOrEmpty().And.HaveCount(1);
 
-                List<UploadOriginalRequest> inputWrapperList = new List<UploadOriginalRequest>(1) { wordUploadWrapper };
-                IEnumerable<StorageResponse<StorageMetaFile>> result = await this._storage.UploadFiles(inputWrapperList);
-                result.Should().NotBeNullOrEmpty().And.HaveCount(1);
+            wordStream.CanSeek.Should().BeTrue();
+            wordStream.CanRead.Should().BeTrue();
 
-                wordStream.CanSeek.Should().BeFalse();
-                wordStream.CanRead.Should().BeFalse();
+            StorageResponse<StorageMetaFile> single = storageResponses.Single();
+            single.Should().NotBeNull();
+            single.Status.Should().Be(StorageActionStatus.Success);
+            single.IsSuccess.Should().BeTrue();
 
-                StorageResponse<StorageMetaFile> single = result.Single();
-                single.Should().NotBeNull();
-                single.Status.Should().Be(StorageActionStatus.Success);
-                single.IsSuccess.Should().BeTrue();
-
-                single.Response.Should().NotBeNull();
-                single.Response.OriginalFile.Should().NotBeNull();
-            }
+            single.Response.Should().NotBeNull();
+            single.Response?.OriginalFile.Should().NotBeNull();
 
             //2nd attempt to upload previously uploaded file
-            using (FileStream wordStream = File.OpenRead(wordPath))
+            await using FileStream wordStream2 = File.OpenRead(wordPath);
+            UploadOriginalRequest wordUploadWrapper2 = new()
             {
-                UploadOriginalRequest wordUploadWrapper = new UploadOriginalRequest()
+                DocumentInfo = new StorageDocumentInfo
                 {
-                    DocumentInfo = new StorageDocumentInfo()
-                    {
-                        Format = GroupDocs.Editor.Formats.WordProcessingFormats.FromExtension(wordFilename),
-                        IsEncrypted = false,
-                        PageCount = 1,
-                        Size = 100500
-                    },
-                    FileContent = new FileContent()
-                    {
-                        FileName = wordFilename,
-                        ResourceStream = wordStream
-                    }
-                };
+                    Format = Formats.WordProcessingFormats.FromExtension(wordFilename),
+                    IsEncrypted = false,
+                    PageCount = 1,
+                    Size = 100500
+                },
+                FileContent = new FileContent
+                {
+                    FileName = wordFilename,
+                    ResourceStream = wordStream2
+                }
+            };
 
-                List<UploadOriginalRequest> inputWrapperList = new List<UploadOriginalRequest>(1) { wordUploadWrapper };
-                IEnumerable<StorageResponse<StorageMetaFile>> result = await this._storage.UploadFiles(inputWrapperList);
-                result.Should().NotBeNullOrEmpty().And.HaveCount(1);
-                result.Single().Should().NotBeNull();
-            }
+            List<UploadOriginalRequest> inputWrapperList2 = new(1) { wordUploadWrapper2 };
+            IEnumerable<StorageResponse<StorageMetaFile>> result2 = await _storage.UploadFiles(inputWrapperList2);
+            var storageResponses2 = result2.ToList();
+            storageResponses2.Should().NotBeNullOrEmpty().And.HaveCount(1);
+            storageResponses2.Single().Should().NotBeNull();
         }
 
         public void Dispose()
@@ -251,7 +250,7 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation
         protected virtual void Dispose(bool disposing)
         {
             if (!disposing) return;
-            this._storage.Dispose();
+            _storage.Dispose();
         }
     }
 }

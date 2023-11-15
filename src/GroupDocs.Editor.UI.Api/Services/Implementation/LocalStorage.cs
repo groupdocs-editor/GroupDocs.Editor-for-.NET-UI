@@ -124,30 +124,37 @@ public class LocalStorage : IStorage
         return result;
     }
 
-    public StorageResponse RemoveFolder(string folderSubPath)
+    public Task<StorageResponse> RemoveFolder(string folderSubPath)
     {
         var folder = Path.Combine(_options.RootFolder, folderSubPath);
-        if (!Directory.Exists(folder)) return StorageResponse.CreateNotExist();
+        if (!Directory.Exists(folder)) return Task.FromResult(StorageResponse.CreateNotExist());
         Directory.Delete(folder, true);
-        return StorageResponse.CreateSuccess();
+        return Task.FromResult(StorageResponse.CreateSuccess());
 
     }
 
-    public StorageResponse RemoveFile(string fileSubPath)
+    public Task<StorageResponse> RemoveFile(string fileSubPath)
     {
         var file = Path.Combine(_options.RootFolder, fileSubPath);
-        if (!File.Exists(file)) return StorageResponse.CreateNotExist();
+        if (!File.Exists(file)) return Task.FromResult(StorageResponse.CreateNotExist());
         File.Delete(file);
-        return StorageResponse.CreateSuccess();
+        return Task.FromResult(StorageResponse.CreateSuccess());
 
     }
 
-    public Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath)
+    public async Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath)
     {
         var file = Path.Combine(_options.RootFolder, fileSubPath);
-        return !File.Exists(file)
-            ? Task.FromResult(StorageDisposableResponse<Stream>.CreateNotExist(Stream.Null))
-            : Task.FromResult(StorageDisposableResponse<Stream>.CreateSuccess(File.Open(file, FileMode.Open)));
+        if (!File.Exists(file))
+        {
+            return StorageDisposableResponse<Stream>.CreateNotExist(Stream.Null);
+        }
+
+        await using var fileStream = File.Open(file, FileMode.Open);
+        MemoryStream memoryStream = new();
+        await fileStream.CopyToAsync(memoryStream);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        return StorageDisposableResponse<Stream>.CreateSuccess(memoryStream);
     }
 
     public async Task<StorageResponse<string>> GetFileText(string fileSubPath)

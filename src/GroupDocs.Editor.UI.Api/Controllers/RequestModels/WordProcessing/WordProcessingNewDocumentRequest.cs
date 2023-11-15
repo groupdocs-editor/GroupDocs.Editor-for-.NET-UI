@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GroupDocs.Editor.Options;
+﻿using GroupDocs.Editor.Options;
+using System.ComponentModel.DataAnnotations;
 
-namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 
-public class NewWordProcessingDocumentRequest
+public class WordProcessingNewDocumentRequest
 {
     /// <summary>
     /// Gets or sets the edit options.
