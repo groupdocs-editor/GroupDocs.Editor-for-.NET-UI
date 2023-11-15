@@ -6,11 +6,11 @@
 ![Nuget](https://img.shields.io/nuget/v/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
 ![Nuget](https://img.shields.io/nuget/dt/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
 
-GroupDocs.Editor UI is an essential interface that complements [GroupDocs.Editor for .NET](https://products.groupdocs.com/editor/net), offering a feature-rich platform for displaying a wide range of popular Word document formats (such as DOC, DOCX, RTF, ODT, and more) directly within a web browser. This article will provide insights into the capabilities and resources offered by the GroupDocs.Editor for .NET UI. You can find the primary repository for this UI interface at [GroupDocs.Editor-for-.NET-UI](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI).
+GroupDocs.Editor UI is an essential interface that complements the [GroupDocs.Editor for .NET](https://products.groupdocs.com/editor/net) library, offering a feature-rich platform for displaying a wide range of popular word-processing formats (such as DOC, DOCX, RTF, ODT, and more) directly within a web browser. This article will provide insights into the capabilities and resources offered by the GroupDocs.Editor for .NET UI. You can find the primary repository for this UI interface at [GroupDocs.Editor-for-.NET-UI](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI).
 
 ## Overview of GroupDocs.Editor.UI
 
-GroupDocs.Editor UI is designed to seamlessly collaborate with GroupDocs.Editor for .NET, extending the document processing capabilities for .NET applications. It delivers an interactive interface, enabling users to view and edit Word documents from various formats directly within a web browser.
+GroupDocs.Editor UI is designed to seamlessly collaborate with the GroupDocs.Editor for .NET library, extending the document processing capabilities for .NET applications. It delivers an interactive interface, enabling users to view and edit word-processing documents of various formats directly within a web browser.
 
 ## Repository Highlights
 
@@ -22,7 +22,7 @@ The GroupDocs.Editor.UI repository provides the code for creating a Web API app 
 dotnet add package GroupDocs.Editor.UI.Api
 ```
 
-To integrate this package into your ASP.NET Core project, add the necessary services and middlewares in your `Startup` class, as demonstrated below:
+To integrate this package into your ASP.NET Core project, add the necessary services and middleware in your `Startup` class, as demonstrated below:
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -39,7 +39,7 @@ The UI is an Angular application built on top of the [`@groupdocs/groupdocs.edit
 
 ## API Integration
 
-The API is a critical component used to serve content, allowing users to open, view, edit, and save Word documents. The API can be hosted within the same application or in a separate one. Currently, the following API implementations are available:
+The API is a critical component used to serve content, allowing users to open, view, edit, and save word-processing documents. The API can be hosted within the same application or in a separate one. Currently, the following API implementations are available:
 
 - [GroupDocs.Editor.UI.Api](dotnet add package GroupDocs.Editor.UI.Api)
 
@@ -47,7 +47,9 @@ All API implementations are extensions of `IMvcBuilder`.
 
 ## Licensing
 
-To utilize GroupDocs.Editor for .NET without trial limitations, you need a valid license. Temporary licenses can be obtained from [Get a Temporary License](https://purchase.groupdocs.com/temporary-license). Here's how you can set a license in the `appsettings.json` file:
+To use GroupDocs.Editor for .NET without trial limitations, you need a valid license. To request a temporary license and try the GroupDocs.Editor library before buying it, visit the [Get a Temporary License](https://purchase.groupdocs.com/temporary-license) page. 
+
+Here's how you can set a license in the `appsettings.json` file:
 
 ```json
 "LicenseOptions": {
@@ -78,7 +80,7 @@ For those who prefer Amazon S3 for file storage, you can configure it by adding 
 builder.Services.AddEditor<AwsS3Storage>(builder.Configuration);
 ```
 
-Specify the options in the `appsettings.json` for file storage folder:
+In the `appsettings.json`, specify the options for the file storage folder:
 
 ```json
 "AWS": {
