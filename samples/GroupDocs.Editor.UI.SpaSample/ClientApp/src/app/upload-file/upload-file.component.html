@@ -1,0 +1,9 @@
+
+
+<div class="mat-typography">
+  <label for="formFile" class="form-label">Upload file example</label>
+  <input (change)="this.onFileChange($event)" class="form-control" type="file" id="formFile">
+  <button mat-button (click)="this.upload()" type="button" class="btn btn-primary mt-3">Upload</button>
+  <button mat-button [disabled]="!allowAccept" (click)="goToLink()" [matTooltip]="'Accept'" [matTooltipPosition]="'below'">Accept</button>
+</div>
+

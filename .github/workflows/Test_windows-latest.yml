@@ -1,7 +1,7 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: Test Packages
+name: Test windows-latest
 
 on:
   push:
@@ -23,4 +23,12 @@ jobs:
     - name: Build
       run: dotnet build ./GroupDocs.Editor.UI.sln --no-restore
     - name: Test
+      env:
+        EDITOR_AWS_BUCKET: ${{ secrets.EDITOR_AWS_BUCKET }}
+        EDITOR_AWS_KEY: ${{ secrets.EDITOR_AWS_KEY }}
+        EDITOR_AWS_REGION: ${{ secrets.EDITOR_AWS_REGION }}
+        EDITOR_AWS_SECRETKEY: ${{ secrets.EDITOR_AWS_SECRETKEY }}
+        EDITOR_AZURE_KEY: ${{ secrets.EDITOR_AZURE_KEY }}
+        EDITOR_AZURE_NAME: ${{ secrets.EDITOR_AZURE_NAME }}
+        EDITOR_AZURE_CONTAINER: ${{ secrets.EDITOR_AZURE_CONTAINER }}
       run: dotnet test ./GroupDocs.Editor.UI.sln --no-build --verbosity normal

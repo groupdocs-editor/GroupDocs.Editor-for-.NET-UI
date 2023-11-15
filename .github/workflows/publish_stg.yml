@@ -1,5 +1,5 @@
 # This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+# For more information see: https:\\docs.github.com\en\actions\automating-builds-and-tests\building-and-testing-net
 
 name: STG Publish GroupDocs.Editor.UI.Api
 
@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish_stage:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -27,8 +27,17 @@ jobs:
       run: |
           cd src\GroupDocs.Editor.UI.Api
           dotnet pack -c Release -o out
-
+    - name: Write cert
+      env:
+        PFX_IN_BASE64: ${{ secrets.PFX_IN_BASE64 }}
+        PFX_PATH: ${{ secrets.PFX_PATH }}
+      run: |
+          [System.IO.File]::WriteAllBytes($env:PFX_PATH, [System.Convert]::FromBase64String($env:PFX_IN_BASE64))
+    - name: Sign by cert
+      run: dotnet nuget sign .\src\GroupDocs.Editor.UI.Api\out\*.nupkg --certificate-path ${{secrets.PFX_PATH}} --certificate-password ${{secrets.PFX_PWD}} --timestamper ${{secrets.PFX_TMS}}
+    - name: Nuget verify
+      run: dotnet nuget verify .\src\GroupDocs.Editor.UI.Api\out\*.nupkg --all
+    - name: Remove cert
+      run: rm ${{secrets.PFX_PATH}}
     - name: Push generated package to GitHub registry
-      run: dotnet nuget push ./src\GroupDocs.Editor.UI.Api/out/*.nupkg --skip-duplicate --no-symbols true
-
-
+      run: dotnet nuget push .\src\GroupDocs.Editor.UI.Api\out\*.nupkg --api-key "${{secrets.NUGET_TOKEN_STG}}" --source https://apiint.nugettest.org/v3/index.json --skip-duplicate
