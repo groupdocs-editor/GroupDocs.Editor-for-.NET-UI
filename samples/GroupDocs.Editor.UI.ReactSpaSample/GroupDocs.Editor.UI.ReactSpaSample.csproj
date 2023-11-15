@@ -16,6 +16,7 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.24" />
+	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,10 +24,6 @@
 	<Content Remove="$(SpaRoot)**" />
 	<None Remove="$(SpaRoot)**" />
 	<None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<ProjectReference Include="..\..\src\GroupDocs.Editor.UI.Api\GroupDocs.Editor.UI.Api.csproj" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
