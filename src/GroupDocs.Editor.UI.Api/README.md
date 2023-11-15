@@ -72,23 +72,85 @@ RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
 RUN fc-cache -f -v
 ```
 
-## Amazon S3 Storage
+## Amazon S3 Storage Configuration
 
-For those who prefer Amazon S3 for file storage, you can configure it by adding the following service in your `Startup` class:
+Provides instructions on configuring Amazon S3 for file storage within your application. Follow the steps below to integrate Amazon S3 Storage into your project.
+
+### 1. Add Amazon S3 Storage Service in `Startup` Class
+
+In your `Startup` class, add the Amazon S3 Storage service using the following code:
 
 ```csharp
 builder.Services.AddEditor<AwsS3Storage>(builder.Configuration);
 ```
 
-In the `appsettings.json`, specify the options for the file storage folder:
+This code adds the necessary services for Amazon S3 Storage, utilizing configuration settings defined in the `appsettings.json` file.
+
+### 2. Configure Amazon S3 Storage Options
+
+In the `appsettings.json` file, specify the configuration options for Amazon S3 Storage under the "AWS" section:
 
 ```json
 "AWS": {
-    "Profile": "s3-dotnet-demo",
-    "Region": "us-west-2",
-    "BucketName": "groupDocs-editor-files"
+    "Profile": "your-aws-profile",
+    "Bucket": "your-bucket-name",
+    "RootFolderName": "your-root-folder-name",
+    "LinkExpiresDays": 360,
+    "Region": "your-region",
+    "AccessKey": "your-access-key",
+    "SecretKey": "your-secret-key"
 }
 ```
+
+Replace placeholders like "your-aws-profile," "your-bucket-name," "your-root-folder-name," "your-region," "your-access-key," and "your-secret-key" with your actual Amazon S3 Storage details.
+
+### Configuration Options:
+
+- **Profile:** Your AWS profile name.
+- **Bucket:** The name of your S3 bucket.
+- **RootFolderName:** The name of the root folder within your S3 bucket.
+- **LinkExpiresDays:** The number of days before the generated links expire.
+- **Region:** The AWS region where your S3 bucket is located.
+- **AccessKey:** Your AWS access key.
+- **SecretKey:** Your AWS secret key.
+
+By following these steps, you will have successfully configured Amazon S3 Storage for your application. Ensure that the configuration options match your specific Amazon S3 Storage account details and adjust them accordingly.
+
+## Azure Blob Storage Configuration
+
+This document provides guidance on configuring Azure Blob Storage for file storage within your application. Follow the steps below to integrate Azure Blob Storage into your project.
+
+### 1. Add Azure Blob Storage Service in `Startup` Class
+
+In your `Startup` class, use the following code to add the Azure Blob Storage service:
+
+```csharp
+builder.Services.AddEditor<AzureBlobStorage>(builder.Configuration);
+```
+
+This line of code adds the necessary services for Azure Blob Storage, and it uses configuration settings defined in the `appsettings.json` file.
+
+### 2. Configure Azure Blob Storage Options
+
+In the `appsettings.json` file, specify the configuration options for Azure Blob Storage under the "AzureBlobOptions" section:
+
+```json
+"AzureBlobOptions": {
+    "AccountName": "your-account-name",
+    "AccountKey": "your-account-key",
+    "ContainerName": "your-container-name",
+    "LinkExpiresDays": 360
+}
+```
+
+Make sure to replace placeholders like "your-account-name," "your-account-key," and "your-container-name" with your actual Azure Blob Storage account details.
+
+#### Configuration Options:
+
+- **AccountName:** Your Azure Blob Storage account name.
+- **AccountKey:** Your Azure Blob Storage account key.
+- **ContainerName:** The name of the container where your files will be stored.
+- **LinkExpiresDays:** The number of days before the generated links expire.
 
 ## API Storage Providers
 
@@ -106,6 +168,26 @@ In the `appsettings.json`, you can specify the root folder for file storage and 
     "BaseUrl": "https://yourBaseUrl"
 }
 ```
+
+## Feature Management Configuration
+
+You can manage features through the "FeatureManagement" section in the `appsettings.json` file. Enable or disable specific features according to your requirements:
+
+```json
+"FeatureManagement": {
+    "WordProcessing": true,
+    "LocalFile": true,
+    "Pdf": false
+}
+```
+
+### Feature Descriptions:
+
+- **WordProcessing:** Enables processing of documents in the WordProcessing format family.
+- **LocalFile:** Enables or disables endpoints based on whether you are using AWS S3 or Azure Blob. If set to `true`, it assumes Azure Blob Storage or AWS S3 is used; if set to `false`, it assumes local filesystem is used.
+- **Pdf:** Allows processing of PDF files. Set to `true` to enable, and `false` to disable.
+
+**Note:** Ensure that the feature configurations align with your intended usage and storage provider (Azure Blob or AWS S3).
 
 ## Contributing
 

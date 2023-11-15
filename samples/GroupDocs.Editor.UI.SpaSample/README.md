@@ -1,6 +1,6 @@
 # Building a Document Editing SPA with GroupDocs.Editor.UI.Api and groupdocs.editor.angular.ui-wordprocessing
 
-The **GroupDocs.Editor.UI.ReactSpaSample** demonstrates how to effectively use the **GroupDocs.Editor.UI.Api** in conjunction with the **groupdocs.editor.angular.ui-wordprocessing** as a Document Editor. This Single Page Application (SPA) integrates a RESTful API and an Angular-based user interface, making it a robust solution for document editing. You can explore the configuration details and resources related to this project in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository.
+The **GroupDocs.Editor.UI.ReactSpaSample** demonstrates how to effectively use the **GroupDocs.Editor.UI.Api** in conjunction with the **groupdocs.editor.angular.ui-wordprocessing** as a Document Editor. This Single Page Application (SPA) integrates a RESTful API and an Angular-based user interface, making it a robust solution for document editing. You can explore the configuration details and resources related to this project in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.ApiSample) repository.
 
 ![Editor show](docs/editor.ui.png)
 
@@ -18,7 +18,7 @@ To get started with this project, follow these steps:
 
 1. **Clone the Repository**: Clone the **GroupDocs.Editor.UI.ReactSpaSample** repository to your local development environment.
 
-2. **Configuration**: Configure the necessary settings by referring to the details provided in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample) repository. These settings include specifying the licensing type and source for the GroupDocs.Editor for .NET library.
+2. **Configuration**: Configure the necessary settings by referring to the details provided in the [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.ApiSample) repository. These settings include specifying the licensing type and source for the GroupDocs.Editor for .NET library.
 
 3. **Install Dependencies**: Navigate to the project directory and install the required dependencies using the `npm` or `yarn` package managers:
 

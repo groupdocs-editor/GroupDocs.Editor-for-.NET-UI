@@ -35,13 +35,13 @@ builder.Services.AddEditor<LocalStorage>(builder.Configuration);
 
 ## User Interface (UI)
 
-The UI is an Angular application built on top of the [`@groupdocs/groupdocs.editor.angular.ui-wordprocessing`](https://www.npmjs.com/package/@groupdocs/groupdocs.editor.angular.ui-wordprocessing) package. The example can be found here: [GroupDocs.Editor.UI.SpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.SpaSample).
+The UI is an Angular application built on top of the [`@groupdocs/groupdocs.editor.angular.ui-wordprocessing`](https://www.npmjs.com/package/@groupdocs/groupdocs.editor.angular.ui-wordprocessing) package. The example can be found here: [GroupDocs.Editor.UI.SpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.SpaSample).
 
 ## API Integration
 
 The API is a critical component used to serve content, allowing users to open, view, edit, and save word-processing documents. The API can be hosted within the same application or in a separate one. Currently, the following API implementations are available:
 
-- [GroupDocs.Editor.UI.Api](dotnet add package GroupDocs.Editor.UI.Api)
+- [GroupDocs.Editor.UI.Api](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/src/GroupDocs.Editor.UI.Api)
 
 All API implementations are extensions of `IMvcBuilder`.
 

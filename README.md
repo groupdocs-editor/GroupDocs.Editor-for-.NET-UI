@@ -26,17 +26,17 @@ This Web API app serves as the backend for handling document editing requests an
 
 ### 2. RESTful API Example
 
-To help you get started with creating a RESTful API for document editing, the repository includes an example in the following location: [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ApiSample). This sample provides a clear demonstration of how to set up a RESTful API to interact with GroupDocs.Editor for .NET.
+To help you get started with creating a RESTful API for document editing, the repository includes an example in the following location: [GroupDocs.Editor.UI.ApiSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.ApiSample). This sample provides a clear demonstration of how to set up a RESTful API to interact with GroupDocs.Editor for .NET.
 
 ### 3. Angular App with GroupDocs.Editor Document Editor
 
-For those who prefer to work with Angular, the repository offers an example of creating an Angular app with the GroupDocs.Editor Document Editor. This powerful combination allows you to build feature-rich web applications for document editing. The example can be found here: [GroupDocs.Editor.UI.SpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.SpaSample).
+For those who prefer to work with Angular, the repository offers an example of creating an Angular app with the GroupDocs.Editor Document Editor. This powerful combination allows you to build feature-rich web applications for document editing. The example can be found here: [GroupDocs.Editor.UI.SpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.SpaSample).
 
 To further enhance your Angular application, you can use the `@groupdocs/groupdocs.editor.angular.ui-wordprocessing` npm package, which offers seamless integration of the WordProcessing Document Editor into your Angular projects.
 
 ### 4. React App with TinyMCE as Editor
 
-If you're a fan of React and prefer using TinyMCE as the document editor, GroupDocs.Editor.UI for .NET has you covered. The repository includes an example that demonstrates how to create a React app with TinyMCE as the editor, combined with the power of GroupDocs.Editor.UI.Api. The example can be found here: [GroupDocs.Editor.UI.ReactSpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/word-processing-api/samples/GroupDocs.Editor.UI.ReactSpaSample).
+If you're a fan of React and prefer using TinyMCE as the document editor, GroupDocs.Editor.UI for .NET has you covered. The repository includes an example that demonstrates how to create a React app with TinyMCE as the editor, combined with the power of GroupDocs.Editor.UI.Api. The example can be found here: [GroupDocs.Editor.UI.ReactSpaSample](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/tree/master/samples/GroupDocs.Editor.UI.ReactSpaSample).
 
 ## Resources
 
