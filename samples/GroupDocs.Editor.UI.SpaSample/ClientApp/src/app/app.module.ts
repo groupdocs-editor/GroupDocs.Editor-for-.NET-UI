@@ -10,7 +10,7 @@ import { HomeComponent } from './home/home.component';
 import {UploadFileComponent} from "./upload-file/upload-file.component";
 import {environment} from "../environments/environment";
 import {
-  ApiModule,
+  ApiModule, PdfComponent,
   WordProcessingComponent,
   WordProcessingEditorModule
 } from "@groupdocs/groupdocs.editor.angular.ui-wordprocessing";
@@ -35,6 +35,7 @@ import {NotifierModule} from "angular-notifier";
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'wordProcessing/:folderName', component: WordProcessingComponent },
+      { path: 'pdf/:folderName', component: PdfComponent },
     ])
   ],
   providers: [],
