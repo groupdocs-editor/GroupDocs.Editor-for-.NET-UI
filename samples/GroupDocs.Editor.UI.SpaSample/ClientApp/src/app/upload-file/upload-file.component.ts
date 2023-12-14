@@ -18,7 +18,7 @@ export class UploadFileComponent {
 
   upload() {
     if (this.file) {
-      this.wordHttpService.wordProcessingUploadPost$Json({body:{
+      this.wordHttpService.uploadWordProcessingPost$Json({body:{
           File: this.file,
           "LoadOptions.Password": '',
           "EditOptions.EnablePagination": true,
