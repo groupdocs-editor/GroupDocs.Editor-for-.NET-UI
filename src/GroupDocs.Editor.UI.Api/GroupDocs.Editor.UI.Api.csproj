@@ -5,33 +5,31 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	  <PackageId>GroupDocs.Editor.UI.Api</PackageId>
-	  <Version>6.0.1</Version>
+	  <Version>6.0.2</Version>
 	  <Description>GroupDocs.Editor.UI.Api containing base API features required by GroupDocs.Editor.UI see https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI for more details.</Description>
 	  <PackageTags>GroupDocs;Editor;UI;API;ASP.NET Core;</PackageTags>
 	  <Company>GroupDocs</Company>
 	  <PackageProjectUrl>https://products.groupdocs.app/editor/total</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI</RepositoryUrl>
-	  <PackageReadmeFile>README.md</PackageReadmeFile>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageIcon>images\icon.png</PackageIcon>
 	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="images\icon.png" />
-		<None Include="README.md" Pack="true" PackagePath="\" />
 		<None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
 	</ItemGroup>
   <ItemGroup>
-	<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.7" />
-	<PackageReference Include="AWSSDK.S3" Version="3.7.300.2" />
+	<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
+	<PackageReference Include="AWSSDK.S3" Version="3.7.304.7" />
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
-	<PackageReference Include="GroupDocs.Editor" Version="23.9.0" />
+	<PackageReference Include="GroupDocs.Editor" Version="23.12.0" />
 	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
 	<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
 	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 	<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-	<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="3.0.0" />
+	<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="3.1.1" />
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
 	<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
   </ItemGroup>
