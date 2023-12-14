@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import {StorageMetaFile, WordProcessingService} from "@groupdocs/groupdocs.editor.angular.ui-wordprocessing";
+import { Component } from '@angular/core';
+import {
+  PdfService,
+  StorageMetaFile,
+  WordProcessingService
+} from "@groupdocs/groupdocs.editor.angular.ui-wordprocessing";
 
 @Component({
   selector: 'app-upload-file',
@@ -8,17 +12,23 @@ import {StorageMetaFile, WordProcessingService} from "@groupdocs/groupdocs.edito
 })
 export class UploadFileComponent {
   file?: File;
+  format: "wordProcessing" | "pdf" | undefined;
   documentCode?: string;
   showLoading = false;
   allowAccept = false;
-  constructor(private wordHttpService: WordProcessingService) { }
+  fileUploading = false;
+  constructor(
+    private pdfService: PdfService,
+    private wordHttpService: WordProcessingService
+  ) { }
   onFileChange(event: any) {
     this.file = event.target.files[0]
   }
 
   upload() {
     if (this.file) {
-      this.wordHttpService.wordProcessingUploadPost$Json({body:{
+      this.fileUploading = true;
+      this.wordHttpService.uploadWordProcessingPost$Json({body:{
           File: this.file,
           "LoadOptions.Password": '',
           "EditOptions.EnablePagination": true,
@@ -30,19 +40,50 @@ export class UploadFileComponent {
         }}).subscribe({
         next: (data: StorageMetaFile) => {
           if (data) {
+            this.format = "wordProcessing";
             this.documentCode = data.documentCode;
             this.showLoading = false;
             this.allowAccept = true;
+            this.fileUploading = false;
           }
         },
-        error: (error: any) => {console.error(error)},
+        error: (error: any) => {
+          this.fileUploading = false;
+          console.error(error)
+        },
+      });
+    } else {
+      alert("Please select a file first")
+    }
+  }
+  uploadPdf() {
+    if (this.file) {
+      this.fileUploading = true;
+      this.pdfService.uploadPdfPost$Json({body:{
+          File: this.file,
+          "LoadOptions.Password": '',
+          "EditOptions.EnablePagination": true,
+        }}).subscribe({
+        next: (data: StorageMetaFile) => {
+          if (data) {
+            this.format = "pdf";
+            this.documentCode = data.documentCode;
+            this.showLoading = false;
+            this.allowAccept = true;
+            this.fileUploading = false;
+          }
+        },
+        error: (error: any) => {
+          this.fileUploading = false;
+          console.error(error)
+        },
       });
     } else {
       alert("Please select a file first")
     }
   }
   goToLink(): void {
-    let url = `wordProcessing/${this.documentCode}`;
+    let url = `${this.format}/${this.documentCode}`;
     window.open(url, '_blank');
   }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
 	<TargetFramework>net6.0</TargetFramework>
@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.0" />
-	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.1" />
+	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
+	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
 	<None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
-	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 	<!-- Ensure Node.js is installed -->
 	<Exec Command="node --version" ContinueOnError="true">
 	  <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
