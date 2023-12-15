@@ -3,8 +3,8 @@
 ![Build Packages](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/build_packages.yml/badge.svg)
 ![Test ubuntu-latest](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/Test_linux.yml/badge.svg)
 ![Test windows-latest](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI/actions/workflows/Test_windows-latest.yml/badge.svg)
-![Nuget](https://img.shields.io/nuget/v/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
-![Nuget](https://img.shields.io/nuget/dt/groupdocs.editor.ui?label=GroupDocs.Editor.UI)
+![Nuget](https://img.shields.io/nuget/v/GroupDocs.Editor.UI.Api?label=GroupDocs.Editor.UI)
+![Nuget](https://img.shields.io/nuget/dt/GroupDocs.Editor.UI.Api?label=GroupDocs.Editor.UI)
 
 Document editing is a critical component in many applications. GroupDocs.Editor for .NET offers a powerful solution for handling popular word-processing document formats like DOC, DOCX, RTF, ODT, and more. To complement this robust .NET library, GroupDocs.Editor.UI for .NET provides a rich UI interface that allows users to view and edit documents directly in a web browser. In this article, we'll dive into the features and resources provided by GroupDocs.Editor.UI for .NET, which enhances document processing capabilities. The primary repository for this UI interface is located at [GroupDocs.Editor-for-.NET-UI](https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI).
 
