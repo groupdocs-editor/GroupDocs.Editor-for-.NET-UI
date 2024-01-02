@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace GroupDocs.Editor.UI.Api.Services.Licensing;
 
-internal class RemoteUrlFileLicenseService : LicenseServiceBase<RemoteUrlFileLicenseService>
+public class RemoteUrlFileLicenseService : LicenseServiceBase<RemoteUrlFileLicenseService>
 {
     public RemoteUrlFileLicenseService(
         IHostApplicationLifetime appLifetime,

@@ -392,16 +392,20 @@
             <param name="request">The request.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditor``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorLicense``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
-            Adds DI service required by the editor.
+            Adds a license service for the GroupDocs.Editor for .NET.
+            You can choose from available license services such as <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.Base64FileLicenseService"/>,
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.RemoteUrlFileLicenseService"/>, or <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.LocalFileLicenseService"/> with the corresponding
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Options.LicenseOptions"/> by specifying the <see cref="T:GroupDocs.Editor.UI.Api.Services.Options.LicenseSourceType"/>.
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="services">The services.</param>
-            <param name="configuration">The configuration.</param>
-            <returns></returns>
+            <typeparam name="T">The type of the license service. Choose from <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.Base64FileLicenseService"/>,
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.RemoteUrlFileLicenseService"/>, or <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.LocalFileLicenseService"/>.</typeparam>
+            <param name="services">The services' collection.</param>
+            <param name="configuration">The configuration containing license options.</param>
+            <returns>The modified services collection.</returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorTrial``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditor``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Adds DI service required by the editor in trial mode.
             </summary>

@@ -14,18 +14,21 @@ namespace GroupDocs.Editor.UI.Api.Extensions;
 public static class EditorServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds DI service required by the editor.
+    /// Adds a license service for the GroupDocs.Editor for .NET.
+    /// You can choose from available license services such as <see cref="Base64FileLicenseService"/>,
+    /// <see cref="RemoteUrlFileLicenseService"/>, or <see cref="LocalFileLicenseService"/> with the corresponding
+    /// <see cref="LicenseOptions"/> by specifying the <see cref="LicenseSourceType"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="services">The services.</param>
-    /// <param name="configuration">The configuration.</param>
-    /// <returns></returns>
-    public static IServiceCollection AddEditor<T>(
-        this IServiceCollection services, IConfiguration configuration) where T : IStorage
+    /// <typeparam name="T">The type of the license service. Choose from <see cref="Base64FileLicenseService"/>,
+    /// <see cref="RemoteUrlFileLicenseService"/>, or <see cref="LocalFileLicenseService"/>.</typeparam>
+    /// <param name="services">The services' collection.</param>
+    /// <param name="configuration">The configuration containing license options.</param>
+    /// <returns>The modified services collection.</returns>
+    public static IServiceCollection AddEditorLicense<T>(
+        this IServiceCollection services, IConfiguration configuration) where T : LicenseServiceBase<T>
     {
         services.Configure<LicenseOptions>(configuration.GetSection(nameof(LicenseOptions)));
-        services.AddHostedService<RemoteUrlFileLicenseService>();
-        return services.AddEditorTrial<T>(configuration);
+        return services.AddHostedService<T>();
     }
 
     /// <summary>
@@ -35,7 +38,7 @@ public static class EditorServiceCollectionExtensions
     /// <param name="services">The services.</param>
     /// <param name="configuration">The configuration.</param>
     /// <returns></returns>
-    public static IServiceCollection AddEditorTrial<T>(
+    public static IServiceCollection AddEditor<T>(
         this IServiceCollection services, IConfiguration configuration) where T : IStorage
     {
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
