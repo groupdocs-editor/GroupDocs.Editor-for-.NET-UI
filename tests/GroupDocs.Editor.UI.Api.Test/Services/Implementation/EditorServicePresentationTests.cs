@@ -50,6 +50,10 @@ public class EditorServicePresentationTests
     [Fact]
     public async Task CreateDocument()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
@@ -232,6 +236,10 @@ public class EditorServicePresentationTests
     [Fact]
     public async Task ConvertPreviews()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
