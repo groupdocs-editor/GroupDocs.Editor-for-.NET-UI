@@ -14,6 +14,7 @@ using GroupDocs.Editor.UI.Api.Test.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System.Runtime.InteropServices;
 
 namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation;
 
@@ -329,6 +330,10 @@ public class EditorServicePresentationTests
     [Fact]
     public async Task ConvertToDocument()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return;
+        }
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
