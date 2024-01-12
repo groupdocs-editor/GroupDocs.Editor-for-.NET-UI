@@ -8,13 +8,13 @@ using GroupDocs.Editor.UI.Api.Services.Interfaces;
 
 namespace GroupDocs.Editor.UI.Api.Services.Options;
 
-internal sealed class StorageCallback : IHtmlSavingCallback
+internal sealed class StorageCallback<TEditOptions> : IHtmlSavingCallback where TEditOptions : IEditOptions
 {
     private readonly IStorage _storage;
-    private readonly StorageSubFile _metaFile;
+    private readonly StorageSubFile<TEditOptions> _metaFile;
 
 
-    public StorageCallback(IStorage storage, StorageSubFile metaFile)
+    public StorageCallback(IStorage storage, StorageSubFile<TEditOptions> metaFile)
     {
         _storage = storage;
         _metaFile = metaFile;
@@ -22,31 +22,33 @@ internal sealed class StorageCallback : IHtmlSavingCallback
 
     public string SaveOneResource(IHtmlResource resource)
     {
+        ResourceType type;
+        switch (resource)
+        {
+            case IImageResource _:
+                type = ResourceType.Image;
+                break;
+            case HtmlCss.Resources.Audio.Mp3Audio _:
+                type = ResourceType.Audio;
+                break;
+            case HtmlCss.Resources.Fonts.FontResourceBase _:
+                type = ResourceType.Font;
+                break;
+            case CssText _:
+                type = ResourceType.Stylesheet;
+                break;
+            default:
+                type = ResourceType.Image;
+                break;
+        }
         var response = _storage
-            .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent } },
-                _metaFile.DocumentCode, _metaFile.SubCode.ToString()).Result.FirstOrDefault();
+            .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent, ResourceType = type } },
+                _metaFile.DocumentCode, _metaFile.SubCode).Result.FirstOrDefault();
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return string.Empty;
         }
-        switch (resource)
-        {
-            case IImageResource _:
-                _metaFile.Images.Add(response.Response);
-                break;
-            case HtmlCss.Resources.Audio.Mp3Audio _:
-                _metaFile.Audios.Add(response.Response);
-                break;
-            case HtmlCss.Resources.Fonts.FontResourceBase _:
-                _metaFile.Fonts.Add(response.Response);
-                break;
-            case CssText _:
-                _metaFile.Stylesheets.Add(response.Response);
-                break;
-            case null:
-                throw new ArgumentNullException(nameof(resource));
-        }
-
+        _metaFile.Resources.Add(response.Response.FileName, response.Response);
         return response.Response.FileLink;
     }
 }

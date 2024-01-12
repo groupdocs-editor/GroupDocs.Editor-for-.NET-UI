@@ -23,13 +23,4 @@ public class PdfUploadRequest
     /// </value>
     [Required]
     public PdfLoadOptions LoadOptions { get; set; }
-
-    /// <summary>
-    /// Gets or sets the edit options.
-    /// </summary>
-    /// <value>
-    /// The edit options.
-    /// </value>
-    [Required]
-    public PdfEditOptions EditOptions { get; set; }
 }

@@ -18,5 +18,9 @@ public class DocumentInfoProfile : Profile
                 opt => opt.MapFrom(src => FixedLayoutFormats.FromExtension(src.Format.Extension)))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => src.Format == FixedLayoutFormats.Pdf ? "Pdf" : "Xps"));
+        CreateMap<PresentationDocumentInfo, StorageDocumentInfo>()
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.FamilyFormat,
+                opt => opt.MapFrom(src => "Presentation"));
     }
 }

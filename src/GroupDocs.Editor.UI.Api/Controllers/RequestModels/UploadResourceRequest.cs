@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GroupDocs.Editor.UI.Api.Models.Storage;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
@@ -33,14 +34,6 @@ public class UploadResourceRequest
     /// The old name of the image.
     /// </value>
     public string OldResorceName { get; set; }
-
-    /// <summary>
-    /// The target subfolder index-name where the files should be saved.
-    /// </summary>
-    /// <value>
-    /// The index of the sub.
-    /// </value>
-    public int SubIndex { get; set; }
 
     /// <summary>
     /// Gets or sets the type of the resource that try to update.

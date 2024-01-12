@@ -22,5 +22,5 @@ public class ContentRequest
     /// <value>
     /// The index of the sub.
     /// </value>
-    public int SubIndex { get; set; }
+    public string SubIndex { get; set; }
 }

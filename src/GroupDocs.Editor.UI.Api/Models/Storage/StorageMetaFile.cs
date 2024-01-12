@@ -1,9 +1,13 @@
-﻿namespace GroupDocs.Editor.UI.Api.Models.Storage;
+﻿using GroupDocs.Editor.Options;
+
+namespace GroupDocs.Editor.UI.Api.Models.Storage;
 
 /// <summary>
 /// Represents the structure of a storage system that stores original documents, previews, and converted documents.
 /// </summary>
-public class StorageMetaFile
+public class StorageMetaFile<TLoadOptions, TEditOptions>
+    where TLoadOptions : ILoadOptions
+    where TEditOptions : IEditOptions
 {
     /// <summary>
     /// Gets or sets the original document information.
@@ -12,6 +16,8 @@ public class StorageMetaFile
     /// The original file.
     /// </value>
     public StorageFile OriginalFile { get; set; }
+
+    public TLoadOptions? OriginalLoadOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the document code.
@@ -35,7 +41,7 @@ public class StorageMetaFile
     /// <value>
     /// The preview images.
     /// </value>
-    public IDictionary<int, StorageFile> PreviewImages { get; set; } = new Dictionary<int, StorageFile>();
+    public IDictionary<string, StorageFile> PreviewImages { get; set; } = new Dictionary<string, StorageFile>();
 
     /// <summary>
     /// The converted documents is located in the specified subfolder.
@@ -44,5 +50,5 @@ public class StorageMetaFile
     /// <value>
     /// The storage sub files.
     /// </value>
-    public IDictionary<int, StorageSubFile> StorageSubFiles { get; set; } = new Dictionary<int, StorageSubFile>();
+    public IDictionary<string, StorageSubFile<TEditOptions>> StorageSubFiles { get; set; } = new Dictionary<string, StorageSubFile<TEditOptions>>();
 }

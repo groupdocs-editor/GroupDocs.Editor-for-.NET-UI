@@ -1,16 +1,13 @@
-﻿using GroupDocs.Editor.Options;
-using System.ComponentModel.DataAnnotations;
+﻿using GroupDocs.Editor.Formats;
+using GroupDocs.Editor.UI.Api.JsonConverters;
+using System.Text.Json.Serialization;
 
 namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 
 public class WordProcessingNewDocumentRequest
 {
-    /// <summary>
-    /// Gets or sets the edit options.
-    /// </summary>
-    /// <value>
-    /// The edit options.
-    /// </value>
-    [Required]
-    public WordProcessingEditOptions EditOptions { get; set; }
+    public string? FileName { get; set; }
+
+    [JsonConverter(typeof(FormatJsonConverter))]
+    public IDocumentFormat Format { get; set; }
 }

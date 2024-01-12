@@ -35,7 +35,7 @@ public class LocalFileController : ControllerBase
     /// <param name="subDocumentIndex">Index of the sub document.</param>
     /// <param name="fileName">Name of the file.</param>
     /// <returns></returns>
-    [HttpGet("{subDocumentIndex}/{fileName}")]
+    [HttpGet("{subDocumentIndex:int}/{fileName}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -75,6 +75,27 @@ public class LocalFileController : ControllerBase
         _logger.LogInformation("try to download file: {fileName} from document: {documentCode}", fileName, documentCode);
         var response = await _storage.DownloadFile(Path.Combine(documentCode.ToString(), HttpUtility.UrlDecode(fileName)));
 
+        if (response is not { IsSuccess: true } || response.Response == null)
+        {
+            return BadRequest(response.Status.ToString());
+        }
+        new FileExtensionContentTypeProvider().TryGetContentType(fileName, out var contentType);
+        return File(response.Response, contentType ?? "application/octet-stream", fileName);
+    }
+
+    [HttpGet("{subFolder}/{fileName}")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DownloadFromSubFolder(Guid documentCode, string subFolder, string fileName)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState.ValidationState);
+        }
+
+        _logger.LogInformation("try to download file: {fileName} for page {page}, document: {documentCode}", fileName, subFolder, documentCode);
+        var response = await _storage.DownloadFile(Path.Combine(documentCode.ToString(), subFolder, HttpUtility.UrlDecode(fileName)));
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return BadRequest(response.Status.ToString());

@@ -5,6 +5,7 @@ using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
+using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
@@ -19,26 +20,26 @@ namespace GroupDocs.Editor.UI.Api.Test.Controllers;
 
 public class WordProcessingControllerTests
 {
-    private readonly MockRepository _mockRepository;
+    private readonly MockRepository mockRepository;
 
-    private readonly Mock<IEditorService> _mockEditorService;
+    private readonly Mock<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>> _mockEditorService;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IStorage> _mockStorage;
-    private readonly Mock<IMetaFileStorageCache> _mockMetaFileStorageCache;
+    private readonly Mock<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>> _mockMetaFileStorageCache;
 
     public WordProcessingControllerTests()
     {
-        _mockRepository = new(MockBehavior.Strict);
+        mockRepository = new MockRepository(MockBehavior.Strict);
 
-        _mockEditorService = _mockRepository.Create<IEditorService>();
-        _mockMapper = _mockRepository.Create<IMapper>();
-        _mockStorage = _mockRepository.Create<IStorage>();
-        _mockMetaFileStorageCache = _mockRepository.Create<IMetaFileStorageCache>();
+        _mockEditorService = mockRepository.Create<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>>();
+        _mockMapper = mockRepository.Create<IMapper>();
+        _mockStorage = mockRepository.Create<IStorage>();
+        _mockMetaFileStorageCache = mockRepository.Create<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>>();
     }
 
     private WordProcessingController CreateWordProcessingController()
     {
-        return new(
+        return new WordProcessingController(
             new NullLogger<WordProcessingController>(),
             _mockEditorService.Object,
             _mockMapper.Object,
@@ -51,32 +52,203 @@ public class WordProcessingControllerTests
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        const string fileName = "WordProcessing.docx";
+        const string fileName = "document.docx";
+        Guid documentCode = Guid.NewGuid();
         await using var stream = new MemoryStream();
-        IFormFile file = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
-
-        WordProcessingUploadRequest fileRequest = new()
+        IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
+        WordProcessingUploadRequest file = new()
         {
-            EditOptions = new(true),
-            LoadOptions = new(),
-            File = file
+            File = formFile
         };
-
-        StorageMetaFile metaFileExpected = new();
-        SaveDocumentRequest mockRequest = new();
-        _mockMapper.Setup(a => a.Map<SaveDocumentRequest>(fileRequest)).Returns(mockRequest);
-        _mockEditorService.Setup(a => a.SaveDocument(mockRequest)).ReturnsAsync(metaFileExpected);
+        UploadDocumentRequest uploadDocumentRequest = new() { FileName = "document.docx", Stream = stream };
+        DocumentUploadResponse<WordProcessingLoadOptions> documentUploadResponse = new()
+        {
+            DocumentCode = documentCode,
+            DocumentInfo = new StorageDocumentInfo
+            {
+                Format = WordProcessingFormats.Docx,
+                FamilyFormat = "wordProcessing",
+                IsEncrypted = false,
+                PageCount = 10,
+                Size = 258
+            },
+            OriginalFile = new StorageFile { DocumentCode = documentCode }
+        };
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "wordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode }
+            };
+        _mockMapper.Setup(a => a.Map<UploadDocumentRequest>(file)).Returns(uploadDocumentRequest);
+        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(storageMetaFile)).Returns(documentUploadResponse);
+        _mockEditorService.Setup(a => a.UploadDocument(uploadDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
-        var result = await wordProcessingController.Upload(fileRequest);
+        var result = await wordProcessingController.Upload(
+            file);
 
         // Assert
         result.Should().NotBeNull();
-        var data = result as OkObjectResult;
-        data.Should().NotBeNull();
-        var response = data?.Value as StorageMetaFile;
-        response.Should().NotBeNull();
-        response.Should().BeEquivalentTo(metaFileExpected);
-        _mockRepository.VerifyAll();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<WordProcessingLoadOptions>;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(documentUploadResponse);
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public async Task NewDocument()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        Guid documentCode = Guid.NewGuid();
+        WordProcessingNewDocumentRequest file = new()
+        {
+            FileName = "document.docx",
+            Format = WordProcessingFormats.Docx
+        };
+        CreateDocumentRequest createDocumentRequest = new() { FileName = "document.docx", Format = WordProcessingFormats.Docx };
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "wordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode }
+            };
+        DocumentUploadResponse<WordProcessingLoadOptions> uploadResponse = new()
+        {
+            DocumentCode = documentCode,
+            DocumentInfo = new StorageDocumentInfo
+            {
+                Format = WordProcessingFormats.Docx,
+                FamilyFormat = "wordProcessing",
+                IsEncrypted = false,
+                PageCount = 10,
+                Size = 258
+            },
+            OriginalFile = new StorageFile { DocumentCode = documentCode }
+        };
+        _mockMapper.Setup(a => a.Map<CreateDocumentRequest>(file)).Returns(createDocumentRequest);
+        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(storageMetaFile)).Returns(uploadResponse);
+        _mockEditorService.Setup(a => a.CreateDocument(createDocumentRequest)).ReturnsAsync(storageMetaFile);
+        // Act
+        var result = await wordProcessingController.NewDocument(
+            file);
+
+        // Assert
+        result.Should().NotBeNull();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<WordProcessingLoadOptions>;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(uploadResponse);
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public async Task EditDocument_ConvertWithEditor()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        Guid documentCode = Guid.NewGuid();
+        WordProcessingEditOptions editOptions = new(true);
+        WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
+        const string expectedHtml = "test html";
+
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "wordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode }
+            };
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockEditorService.Setup(a => a.ConvertToHtml(storageMetaFile, editOptions, null))
+            .ReturnsAsync(expectedHtml);
+        // Act
+        var result = await wordProcessingController.Edit(
+            request);
+
+        // Assert
+        result.Should().NotBeNull();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as string;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(expectedHtml);
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public async Task EditDocument_WasConverted()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        Guid documentCode = Guid.NewGuid();
+        WordProcessingEditOptions editOptions = new(true);
+        WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
+        const string expectedHtml = "test html";
+
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "wordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", new StorageSubFile<WordProcessingEditOptions>("fixed.docx", "0")
+                    {
+                        EditOptions = editOptions,
+                        DocumentCode = documentCode
+                    }}
+                }
+            };
+        StorageResponse<string> expectedFile = StorageResponse<string>.CreateSuccess(expectedHtml);
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockStorage.Setup(a => a.GetFileText(Path.Combine(documentCode.ToString(), "0", "fixed.html")))
+            .ReturnsAsync(expectedFile);
+        // Act
+        var result = await wordProcessingController.Edit(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as string;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(expectedHtml);
+        mockRepository.VerifyAll();
     }
 
     [Fact]
@@ -84,63 +256,139 @@ public class WordProcessingControllerTests
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        WordProcessingDownloadRequest request = new()
+        Guid documentCode = Guid.NewGuid();
+        WordProcessingSaveOptions saveOptions = new();
+        WordProcessingDownloadRequest request = new() { DocumentCode = documentCode, Format = "docx", SaveOptions = saveOptions };
+        DownloadDocumentRequest documentRequest = new()
         {
-            DocumentCode = Guid.NewGuid(),
-            Format = "doc",
-            LoadOptions = new WordProcessingLoadOptions(),
-            SaveOptions = new WordProcessingSaveOptions(WordProcessingFormats.Doc) { EnablePagination = true }
+            DocumentCode = documentCode,
+            Format = "docx",
+            SaveOptions = saveOptions
         };
-        DownloadDocumentRequest mockRequest = new()
+        using MemoryStream stream = new();
+        FileContent fileContent = new()
         {
-            DocumentCode = Guid.NewGuid(),
-            Format = "doc",
-            LoadOptions = new WordProcessingLoadOptions(),
-            SaveOptions = new WordProcessingSaveOptions(WordProcessingFormats.Doc) { EnablePagination = true }
+            FileName = "fixed.docx",
+            ResourceStream = stream,
+            ResourceType = ResourceType.OriginalDocument
         };
-        _mockMapper.Setup(a => a.Map<DownloadDocumentRequest>(request)).Returns(mockRequest);
-        await using var stream = new MemoryStream();
-        FileContent expectedContent = new() { FileName = "WordProcessing.doc", ResourceStream = stream };
-
-        _mockEditorService.Setup(a => a.ConvertToDocument(mockRequest)).ReturnsAsync(expectedContent);
+        _mockMapper.Setup(a => a.Map<DownloadDocumentRequest>(request)).Returns(documentRequest);
+        _mockEditorService.Setup(a => a.ConvertToDocument(documentRequest)).ReturnsAsync(fileContent);
         // Act
-        var result = await wordProcessingController.Download(request);
+        var result = await wordProcessingController.Download(
+            request);
 
         // Assert
-        var file = result as FileStreamResult;
-        file.Should().NotBeNull();
-        file?.FileStream.Should().BeSameAs(stream);
-        file?.FileDownloadName.Should().Be(expectedContent.FileName);
-        file?.ContentType.Should().Be("application/msword");
-        _mockRepository.VerifyAll();
+        result.Should().NotBeNull();
+        var fileStream = result as FileStreamResult;
+        fileStream.Should().NotBeNull();
+        fileStream?.FileStream.Should().BeSameAs(stream);
+        mockRepository.VerifyAll();
     }
 
     [Fact]
-    public async Task UpdateUpdateHtmlContent()
+    public async Task DownloadPdf_StateUnderTest_ExpectedBehavior()
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        UpdateContentRequest request = new() { DocumentCode = Guid.NewGuid(), HtmlContents = "test", SubIndex = 0 };
-        StorageSubFile subFile = new();
-        StorageMetaFile meteFile = new()
+        Guid documentCode = Guid.NewGuid();
+        PdfSaveOptions saveOptions = new PdfSaveOptions();
+        WordToPdfDownloadRequest request = new WordToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
+        DownloadPdfRequest downloadPdfRequest = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
+        _mockMapper.Setup(a => a.Map<DownloadPdfRequest>(request)).Returns(downloadPdfRequest);
+        using MemoryStream stream = new();
+        FileContent fileContent = new()
         {
-            DocumentCode = request.DocumentCode,
-            StorageSubFiles = new Dictionary<int, StorageSubFile>
-            {
-                { request.SubIndex, subFile },
-            }
+            FileName = "fixed.docx",
+            ResourceStream = stream,
+            ResourceType = ResourceType.OriginalDocument
         };
-        _mockMetaFileStorageCache.Setup(a => a.UpdateFiles(meteFile)).ReturnsAsync(meteFile);
-        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(request.DocumentCode)).ReturnsAsync(meteFile);
-        _mockStorage.Setup(a => a.UpdateHtmlContent(subFile, request.HtmlContents)).ReturnsAsync(StorageResponse<StorageSubFile>.CreateSuccess(subFile));
+        _mockEditorService.Setup(a => a.SaveToPdf(downloadPdfRequest)).ReturnsAsync(fileContent);
         // Act
-        var result = await wordProcessingController.Update(request);
+        var result = await wordProcessingController.DownloadPdf(request);
 
         // Assert
-        var okObject = result as NoContentResult;
-        okObject?.Should().NotBeNull();
-        okObject?.StatusCode.Should().Be(204);
-        _mockRepository.VerifyAll();
+        result.Should().NotBeNull();
+        var fileStream = result as FileStreamResult;
+        fileStream.Should().NotBeNull();
+        fileStream?.FileStream.Should().BeSameAs(stream);
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public async Task UpdateDocument()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        Guid documentCode = Guid.NewGuid();
+        const string editedHtml = "newContent";
+        UpdateContentRequest request = new() { DocumentCode = documentCode, HtmlContents = editedHtml };
+        WordProcessingEditOptions editOptions = new()
+        {
+            EnablePagination = true
+        };
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", new StorageSubFile<WordProcessingEditOptions>("fixed.docx", "0")
+                    {
+                        EditOptions = editOptions,
+                        DocumentCode = documentCode
+                    }}
+                }
+            };
+        StorageSubFile<WordProcessingEditOptions> storageSubFile =
+            new("fixed.docx", "0")
+            {
+                EditOptions = editOptions,
+                DocumentCode = documentCode
+            };
+        StorageResponse<StorageSubFile<WordProcessingEditOptions>> storageResponse =
+            StorageResponse<StorageSubFile<WordProcessingEditOptions>>.CreateSuccess(storageSubFile);
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> newMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", storageSubFile}
+                }
+            };
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockMetaFileStorageCache.Setup(a => a.UpdateFiles(It.IsAny<StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>>())).ReturnsAsync(newMetaFile);
+        _mockEditorService
+            .Setup(a => a.UpdateHtmlContent(storageMetaFile.StorageSubFiles["0"],
+                editedHtml)).ReturnsAsync(storageResponse);
+        // Act
+        var result = await wordProcessingController.Update(
+            request);
+
+        // Assert
+        result.Should().NotBeNull();
+        var fileStream = result as NoContentResult;
+        fileStream.Should().NotBeNull();
+        mockRepository.VerifyAll();
     }
 
     [Fact]
@@ -148,110 +396,225 @@ public class WordProcessingControllerTests
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        using MemoryStream stream = new();
-        IFormFile file = new FormFile(stream, 0, stream.Length, "id_from_form", "WordProcessing.doc");
-        UploadResourceRequest request = new()
+        Guid documentCode = Guid.NewGuid();
+        const string fileName = "new.css";
+        await using var stream = new MemoryStream();
+        IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
+        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResorceName = "test.css", ResourceType = ResourceType.Stylesheet };
+        WordProcessingEditOptions editOptions = new()
         {
-            DocumentCode = Guid.NewGuid(),
-            File = file,
-            ResourceType = ResourceType.Image,
-            SubIndex = 0
+            EnablePagination = true
         };
-        StorageFile storageFile = new();
-        StorageSubFile subFile = new();
-        StorageMetaFile meteFile = new()
-        {
-            DocumentCode = request.DocumentCode,
-            StorageSubFiles = new Dictionary<int, StorageSubFile>
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
             {
-                { request.SubIndex, subFile },
-            }
-        };
-        _mockStorage.Setup(a => a.UpdateResource(subFile, request))
-            .ReturnsAsync(StorageUpdateResourceResponse<StorageSubFile, StorageFile>.CreateSuccess(subFile, storageFile));
-        _mockMetaFileStorageCache.Setup(a => a.UpdateFiles(meteFile)).ReturnsAsync(meteFile);
-        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(request.DocumentCode)).ReturnsAsync(meteFile);
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", new StorageSubFile<WordProcessingEditOptions>("fixed.docx", "0")
+                    {
+                        EditOptions = editOptions,
+                        DocumentCode = documentCode
+                    }}
+                }
+            };
+        StorageFile storageFile = new() { DocumentCode = documentCode, FileName = fileName, ResourceType = ResourceType.Stylesheet };
+        StorageSubFile<WordProcessingEditOptions> storageSub = new(documentCode.ToString(), "0");
+        StorageUpdateResourceResponse<StorageSubFile<WordProcessingEditOptions>, StorageFile>
+            storageUpdateResourceResponse =
+                StorageUpdateResourceResponse<StorageSubFile<WordProcessingEditOptions>, StorageFile>.CreateSuccess(
+                    storageSub, storageFile);
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockEditorService.Setup(a => a.UpdateResource(storageMetaFile.StorageSubFiles["0"], resource))
+            .ReturnsAsync(storageUpdateResourceResponse);
+        _mockMetaFileStorageCache.Setup(a => a.UpdateFiles(It.IsAny<StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>>())).ReturnsAsync(storageMetaFile);
+
         // Act
-        var result = await wordProcessingController.UploadResource(request);
+        var result = await wordProcessingController.UploadResource(resource);
 
         // Assert
         result.Should().NotBeNull();
-        var okObject = result as NoContentResult;
-        okObject?.Should().NotBeNull();
-        okObject?.StatusCode.Should().Be(204);
-        _mockRepository.VerifyAll();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as StorageFile;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(storageFile);
+        mockRepository.VerifyAll();
     }
 
     [Fact]
-    public async Task PreviewImages_ImagesConverted()
+    public async Task Previews()
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        PreviewRequest request = new PreviewRequest
-        {
-            DocumentCode = Guid.NewGuid(),
-            LoadOptions = new WordProcessingLoadOptions()
-        };
-        StorageSubFile subFile = new();
-        StorageFile previewFile = new()
-        { DocumentCode = request.DocumentCode, FileName = "0.svg", FileLink = "http://s.com" };
-        StorageMetaFile meteFile = new()
-        {
-            DocumentCode = request.DocumentCode,
-            StorageSubFiles = new Dictionary<int, StorageSubFile>
+        Guid documentCode = Guid.NewGuid();
+        StorageFile storageFile = new() { DocumentCode = documentCode, FileName = "preview", ResourceType = ResourceType.Preview };
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
             {
-                { 0, subFile },
-            },
-            PreviewImages = new Dictionary<int, StorageFile> { { 0, previewFile } }
-        };
-        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(request.DocumentCode)).ReturnsAsync(meteFile);
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode }
+            };
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFileEditor =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                PreviewImages = new Dictionary<string, StorageFile>
+                {
+                    {"0", storageFile}
+                }
+            };
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockEditorService.Setup(a => a.ConvertPreviews(documentCode)).ReturnsAsync(storageMetaFileEditor);
+
         // Act
-        var result = await wordProcessingController.PreviewImages(request);
+        var result = await wordProcessingController.Previews(documentCode);
 
         // Assert
         result.Should().NotBeNull();
-        var data = result as OkObjectResult;
-        data.Should().NotBeNull();
-        var response = data?.Value as Dictionary<int, StorageFile>;
-        response.Should().NotBeNull();
-        response.Should().BeEquivalentTo(new Dictionary<int, StorageFile> { { 0, previewFile } });
-        _mockRepository.VerifyAll();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as Dictionary<string, StorageFile>;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().BeEquivalentTo(storageMetaFileEditor.PreviewImages);
+        mockRepository.VerifyAll();
     }
 
     [Fact]
-    public async Task Stylesheets_StateUnderTest_ExpectedBehavior()
+    public async Task Stylesheets()
     {
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
-        StylesheetsRequest request = new()
-        {
-            DocumentCode = Guid.NewGuid(),
-            SubIndex = 0
-        };
-        StorageSubFile subFile = new()
-        {
-            Stylesheets = new List<StorageFile>
-                {new() {DocumentCode = request.DocumentCode, FileName = "style.css", FileLink = "http://s.com"}}
-        };
-        StorageMetaFile meteFile = new()
-        {
-            DocumentCode = request.DocumentCode,
-            StorageSubFiles = new Dictionary<int, StorageSubFile>
+        Guid documentCode = Guid.NewGuid();
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
             {
-                { 0, subFile },
-            },
-        };
-        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(request.DocumentCode)).ReturnsAsync(meteFile);
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "fixed",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", new StorageSubFile<WordProcessingEditOptions>("fixed.docx", "0")
+                    {
+                        Resources = new Dictionary<string, StorageFile>
+                        {
+                            {"style.css", new StorageFile {FileName = "style.css", ResourceType = ResourceType.Stylesheet}}
+                        }
+                    }}
+                }
+            };
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+
         // Act
-        var result = await wordProcessingController.Stylesheets(request);
+        var result = await wordProcessingController.Stylesheets(
+            documentCode);
 
         // Assert
         result.Should().NotBeNull();
-        var data = result as OkObjectResult;
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as IEnumerable<StorageFile>;
+        IEnumerable<StorageFile> storageFiles = responseDocument as StorageFile[] ?? responseDocument?.ToArray() ?? Array.Empty<StorageFile>();
+        storageFiles.Should().NotBeNull();
+        storageFiles.Should().BeEquivalentTo(new List<StorageFile> { new() { FileName = "style.css", ResourceType = ResourceType.Stylesheet } });
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public async Task MetaInfo()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        Guid documentCode = Guid.NewGuid();
+        StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
+            new()
+            {
+                DocumentCode = documentCode,
+                DocumentInfo = new StorageDocumentInfo
+                {
+                    Format = WordProcessingFormats.Docx,
+                    FamilyFormat = "WordProcessing",
+                    IsEncrypted = false,
+                    PageCount = 10,
+                    Size = 258
+                },
+                OriginalFile = new StorageFile { DocumentCode = documentCode },
+                StorageSubFiles = new Dictionary<string, StorageSubFile<WordProcessingEditOptions>>
+                {
+                    {"0", new StorageSubFile<WordProcessingEditOptions>("fixed.docx", "0")
+                    {
+                        Resources = new Dictionary<string, StorageFile>
+                        {
+                            {"style.css", new StorageFile {FileName = "style.css", ResourceType = ResourceType.Stylesheet}}
+                        }
+                    }}
+                }
+            };
+        _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+
+        // Act
+        var result = await wordProcessingController.MetaInfo(
+            documentCode);
+
+        // Assert
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var responseDocument = okObjectResult?.Value as StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>;
+        responseDocument.Should().NotBeNull();
+        responseDocument.Should().Be(storageMetaFile);
+        mockRepository.VerifyAll();
+    }
+
+    [Fact]
+    public void SupportedFormats()
+    {
+        // Arrange
+        var wordProcessingController = CreateWordProcessingController();
+        var expected = WordProcessingFormats.All.GroupBy(a => a.Extension).Select(a => a.First()).ToList();
+        _mockEditorService.Setup(a => a.GetSupportedFormats<WordProcessingFormats>()).Returns(expected);
+        // Act
+        var result = wordProcessingController.SupportedFormats();
+
+        // Assert
+        result.Should().NotBeNull();
+        var okObjectResult = result as OkObjectResult;
+        okObjectResult.Should().NotBeNull();
+        var data = okObjectResult?.Value as Dictionary<string, string>;
         data.Should().NotBeNull();
-        var response = data?.Value as ICollection<StorageFile>;
-        response.Should().NotBeNull();
-        response.Should().BeEquivalentTo(subFile.Stylesheets);
-        _mockRepository.VerifyAll();
+        data.Should().BeEquivalentTo(expected.ToDictionary(format => format.Extension, format => format.Name));
+        mockRepository.VerifyAll();
     }
 }

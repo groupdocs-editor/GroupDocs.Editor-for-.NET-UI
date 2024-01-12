@@ -1,4 +1,5 @@
-﻿using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
+﻿using GroupDocs.Editor.Options;
+using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
 using GroupDocs.Editor.UI.Api.JsonConverters;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
@@ -41,17 +42,20 @@ public static class EditorServiceCollectionExtensions
     public static IServiceCollection AddEditor<T>(
         this IServiceCollection services, IConfiguration configuration) where T : IStorage
     {
-        services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
-        services.AddScoped<IMetaFileStorageCache, MetaFileStorageCache>();
-        services.AddTransient<IEditorService, EditorService>();
+        services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
+        services.AddScoped<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>, MetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>>();
+        services.AddTransient<IEditorService<PresentationLoadOptions, PresentationEditOptions>, EditorService<PresentationLoadOptions, PresentationEditOptions>>();
+        services.AddScoped<IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions>, MetaFileStorageCache<PdfLoadOptions, PdfEditOptions>>();
+        services.AddTransient<IEditorService<PdfLoadOptions, PdfEditOptions>, EditorService<PdfLoadOptions, PdfEditOptions>>();
+        services.AddScoped<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>, MetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>>();
+        services.AddTransient<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>, EditorService<WordProcessingLoadOptions, WordProcessingEditOptions>>();
         services.AddScoped(typeof(IStorage), typeof(T));
         if (typeof(T) == typeof(AwsS3Storage))
         {
             services.Configure<AwsOptions>(configuration.GetSection("AWS"));
         }
-
         if (typeof(T) == typeof(LocalStorage))
         {
             services.Configure<LocalStorageOptions>(configuration.GetSection(nameof(LocalStorageOptions)));
@@ -69,12 +73,11 @@ public static class EditorServiceCollectionExtensions
     /// Adds the editor controllers with default JsonSerializerOptions.
     /// </summary>
     /// <param name="services">The services.</param>
-    /// <param name="configuration"></param>
     /// <param name="jsonOption">The json option.</param>
     /// <param name="mvcOption">The MVC option.</param>
     /// <returns></returns>
     public static IServiceCollection AddEditorControllers(
-        this IServiceCollection services, IConfiguration configuration, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
+        this IServiceCollection services, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
     {
         IMvcBuilder mvcBuilder;
         services.AddFeatureManagement();
@@ -90,6 +93,7 @@ public static class EditorServiceCollectionExtensions
         else
         {
             MvcOptions options = new MvcOptions();
+            options.Conventions.Add(new ActionHidingConvention(featureManager));
             mvcOption.Invoke(options);
             mvcBuilder = services.AddControllers(mvcOption);
         }
@@ -99,6 +103,7 @@ public static class EditorServiceCollectionExtensions
             mvcBuilder.AddJsonOptions(option =>
             {
                 option.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
+                option.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
             });
         }
@@ -106,6 +111,7 @@ public static class EditorServiceCollectionExtensions
         {
             JsonOptions options = new();
             options.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
+            options.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
             jsonOption.Invoke(options);
             mvcBuilder.AddJsonOptions(jsonOption);
