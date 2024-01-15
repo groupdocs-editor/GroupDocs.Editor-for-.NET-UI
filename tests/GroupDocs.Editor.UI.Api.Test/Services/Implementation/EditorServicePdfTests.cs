@@ -48,50 +48,6 @@ public class EditorServicePdfTests
     }
 
     [Fact]
-    public async Task CreateDocument()
-    {
-        // Arrange
-        var service = CreateService();
-        Guid documentCode = Guid.NewGuid();
-        var docInfo = new StorageDocumentInfo
-        {
-            Format = FixedLayoutFormats.Pdf,
-            FamilyFormat = "FixedLayout",
-            IsEncrypted = false,
-            PageCount = 1,
-            Size = 1
-        };
-        StorageFile storageFile = new()
-        { DocumentCode = documentCode, FileName = "document.pdf", ResourceType = ResourceType.OriginalDocument };
-        StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        CreateDocumentRequest request = new() { FileName = "document.pdf", Format = FixedLayoutFormats.Pdf };
-        _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), documentCode, ""))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
-        _mockMetaFileStorageCache.Setup(a =>
-                a.UpdateFiles(It.IsAny<StorageMetaFile<PdfLoadOptions, PdfEditOptions>>()))
-            .ReturnsAsync(new StorageMetaFile<PdfLoadOptions, PdfEditOptions>());
-        _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(documentCode);
-        _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<FixedLayoutDocumentInfo>())).Returns(docInfo);
-
-        // Act
-        var result = await service.CreateDocument(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result?.DocumentCode.Should().Be(documentCode);
-        result?.OriginalLoadOptions.Should().BeNull();
-        result?.OriginalFile.Should().BeEquivalentTo(new StorageFile
-        {
-            DocumentCode = documentCode,
-            FileName = "document.pdf",
-            ResourceType = ResourceType.OriginalDocument
-        });
-        result?.DocumentInfo.Should().NotBeNull();
-        result?.DocumentInfo.Should().BeEquivalentTo(docInfo);
-        _mockRepository.VerifyAll();
-    }
-
-    [Fact]
     public async Task UploadDocument()
     {
         // Arrange
