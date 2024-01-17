@@ -22,25 +22,19 @@ internal sealed class StorageCallback<TEditOptions> : IHtmlSavingCallback where 
 
     public string SaveOneResource(IHtmlResource resource)
     {
-        ResourceType type;
-        switch (resource)
+        if (_metaFile.Resources.TryGetValue(resource.FilenameWithExtension, out var fileResource))
         {
-            case IImageResource _:
-                type = ResourceType.Image;
-                break;
-            case HtmlCss.Resources.Audio.Mp3Audio _:
-                type = ResourceType.Audio;
-                break;
-            case HtmlCss.Resources.Fonts.FontResourceBase _:
-                type = ResourceType.Font;
-                break;
-            case CssText _:
-                type = ResourceType.Stylesheet;
-                break;
-            default:
-                type = ResourceType.Image;
-                break;
+            return fileResource.FileLink;
         }
+
+        ResourceType type = resource switch
+        {
+            IImageResource _ => ResourceType.Image,
+            HtmlCss.Resources.Audio.Mp3Audio _ => ResourceType.Audio,
+            HtmlCss.Resources.Fonts.FontResourceBase _ => ResourceType.Font,
+            CssText _ => ResourceType.Stylesheet,
+            _ => ResourceType.Image
+        };
         var response = _storage
             .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent, ResourceType = type } },
                 _metaFile.DocumentCode, _metaFile.SubCode).Result.FirstOrDefault();
@@ -49,6 +43,7 @@ internal sealed class StorageCallback<TEditOptions> : IHtmlSavingCallback where 
             return string.Empty;
         }
         _metaFile.Resources.Add(response.Response.FileName, response.Response);
+
         return response.Response.FileLink;
     }
 }

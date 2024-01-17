@@ -1,6 +1,5 @@
 using AutoMapper;
 using GroupDocs.Editor.Formats;
-using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation;
 using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
@@ -23,17 +22,17 @@ namespace GroupDocs.Editor.UI.Api.Controllers;
 public class PresentationController : ControllerBase
 {
     private readonly ILogger<PresentationController> _logger;
-    protected readonly IEditorService<PresentationLoadOptions, PresentationEditOptions> _editorService;
+    protected readonly IPresentationEditorService _editorService;
     protected readonly IStorage _storage;
-    protected readonly IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions> _storageCache;
+    protected readonly IPresentationStorageCache _storageCache;
     protected readonly IMapper _mapper;
 
     public PresentationController(
         ILogger<PresentationController> logger,
-        IEditorService<PresentationLoadOptions, PresentationEditOptions> editorService,
+        IPresentationEditorService editorService,
         IMapper mapper,
         IStorage storage,
-        IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions> storageCache)
+        IPresentationStorageCache storageCache)
     {
         _logger = logger;
         _editorService = editorService;
@@ -48,7 +47,7 @@ public class PresentationController : ControllerBase
     /// <param name="file"></param>
     /// <returns></returns>
     [HttpPost("createNew")]
-    [ProducesResponseType(typeof(StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PresentationUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateNewDocument(PresentationNewDocumentRequest file)
     {
@@ -62,7 +61,7 @@ public class PresentationController : ControllerBase
         {
             return BadRequest(ModelState.ValidationState);
         }
-        return Ok(_mapper.Map<DocumentUploadResponse<PresentationLoadOptions>>(document));
+        return Ok(_mapper.Map<PresentationUploadResponse>(document));
     }
 
     /// <summary>
@@ -71,7 +70,7 @@ public class PresentationController : ControllerBase
     /// <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
     /// <returns></returns>
     [HttpPost("upload")]
-    [ProducesResponseType(typeof(StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PresentationUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Upload([FromForm] PresentationUploadRequest file)
     {
@@ -81,12 +80,7 @@ public class PresentationController : ControllerBase
         }
 
         var document = await _editorService.UploadDocument(_mapper.Map<UploadDocumentRequest>(file));
-        if (document == null)
-        {
-            return BadRequest("Cannot upload document.");
-        }
-
-        return Ok(_mapper.Map<DocumentUploadResponse<PresentationLoadOptions>>(document));
+        return Ok(_mapper.Map<PresentationUploadResponse>(document));
     }
 
     [HttpPost("edit")]
@@ -163,7 +157,7 @@ public class PresentationController : ControllerBase
     [HttpPost("update")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Update([FromBody] UpdateContentRequestPaged request)
     {
         if (!ModelState.IsValid)
@@ -273,7 +267,7 @@ public class PresentationController : ControllerBase
     [HttpPost("stylesheets/{documentCode:guid}/{slideNumber}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ICollection<StorageFile>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<StorageFile>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Stylesheets(Guid documentCode, int slideNumber)
     {
         if (!ModelState.IsValid)
@@ -294,7 +288,7 @@ public class PresentationController : ControllerBase
     [HttpGet("metaInfo/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PresentationStorageInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> MetaInfo(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -308,7 +302,7 @@ public class PresentationController : ControllerBase
             return BadRequest("file not exist");
         }
 
-        return Ok(meta);
+        return Ok(_mapper.Map<PresentationStorageInfo>(meta));
     }
 
     [HttpGet("supportedFormats")]

@@ -25,14 +25,3 @@ public class UpdateContentRequest
     [Required]
     public string HtmlContents { get; set; }
 }
-
-public class UpdateContentRequestPaged : UpdateContentRequest
-{
-    /// <summary>
-    /// The target subfolder index-name where the files should be saved.
-    /// </summary>
-    /// <value>
-    /// The index of the sub.
-    /// </value>
-    public string SubIndex { get; set; }
-}

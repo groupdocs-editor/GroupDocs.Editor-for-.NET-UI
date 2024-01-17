@@ -1,6 +1,5 @@
 using AutoMapper;
 using GroupDocs.Editor.Formats;
-using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
@@ -23,16 +22,16 @@ namespace GroupDocs.Editor.UI.Api.Controllers;
 public class PdfController : ControllerBase
 {
     private readonly ILogger<PdfController> _logger;
-    private readonly IEditorService<PdfLoadOptions, PdfEditOptions> _editorService;
+    private readonly IPdfEditorService _editorService;
     private readonly IStorage _storage;
-    private readonly IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions> _storageCache;
+    private readonly IPdfStorageCache _storageCache;
     private readonly IMapper _mapper;
 
     public PdfController(
         ILogger<PdfController> logger,
-        IEditorService<PdfLoadOptions, PdfEditOptions> editorService,
+        IPdfEditorService editorService,
         IMapper mapper, IStorage storage,
-        IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions> storageCache)
+        IPdfStorageCache storageCache)
     {
         _logger = logger;
         _editorService = editorService;
@@ -48,7 +47,7 @@ public class PdfController : ControllerBase
     /// <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
     /// <returns></returns>
     [HttpPost("upload")]
-    [ProducesResponseType(typeof(StorageMetaFile<PdfLoadOptions, PdfEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PdfUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Upload([FromForm] PdfUploadRequest file)
     {
@@ -60,34 +59,12 @@ public class PdfController : ControllerBase
         try
         {
             var document = await _editorService.UploadDocument(_mapper.Map<UploadDocumentRequest>(file));
-            if (document == null)
-            {
-                return BadRequest(ModelState.ValidationState);
-            }
-            return Ok(_mapper.Map<DocumentUploadResponse<PdfLoadOptions>>(document));
+            return Ok(document);
         }
         catch (Exception e)
         {
             return BadRequest(e);
         }
-    }
-
-    [HttpPost("createNew")]
-    [ProducesResponseType(typeof(StorageMetaFile<PdfLoadOptions, PdfEditOptions>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> NewDocument(PdfNewDocumentRequest file)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ValidationState);
-        }
-
-        var document = await _editorService.CreateDocument(_mapper.Map<CreateDocumentRequest>(file));
-        if (document == null)
-        {
-            return BadRequest(ModelState.ValidationState);
-        }
-        return Ok(_mapper.Map<DocumentUploadResponse<PdfLoadOptions>>(document));
     }
 
     [HttpPost("edit")]
@@ -164,7 +141,7 @@ public class PdfController : ControllerBase
     [HttpPost("update")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Update([FromBody] UpdateContentRequest request)
     {
         if (!ModelState.IsValid)
@@ -245,7 +222,7 @@ public class PdfController : ControllerBase
     [HttpPost("stylesheets/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ICollection<StorageFile>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<StorageFile>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Stylesheets(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -268,7 +245,7 @@ public class PdfController : ControllerBase
     [HttpGet("metaInfo/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(StorageMetaFile<PdfLoadOptions, PdfEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PdfStorageInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> MetaInfo(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -287,7 +264,7 @@ public class PdfController : ControllerBase
             return BadRequest("file not exist");
         }
 
-        return Ok(meta);
+        return Ok(_mapper.Map<PdfStorageInfo>(meta));
     }
 
     [HttpGet("supportedFormats")]

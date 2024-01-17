@@ -1,6 +1,5 @@
 using AutoMapper;
 using GroupDocs.Editor.Formats;
-using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
@@ -23,17 +22,17 @@ namespace GroupDocs.Editor.UI.Api.Controllers;
 public class WordProcessingController : ControllerBase
 {
     private readonly ILogger<WordProcessingController> _logger;
-    protected readonly IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions> _editorService;
+    protected readonly IWordProcessingEditorService _editorService;
     protected readonly IStorage _storage;
-    protected readonly IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions> _storageCache;
+    protected readonly IWordProcessingStorageCache _storageCache;
     protected readonly IMapper _mapper;
 
     public WordProcessingController(
         ILogger<WordProcessingController> logger,
-        IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions> editorService,
+        IWordProcessingEditorService editorService,
         IMapper mapper,
         IStorage storage,
-        IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions> storageCache)
+        IWordProcessingStorageCache storageCache)
     {
         _logger = logger;
         _editorService = editorService;
@@ -49,7 +48,7 @@ public class WordProcessingController : ControllerBase
     /// <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
     /// <returns></returns>
     [HttpPost("upload")]
-    [ProducesResponseType(typeof(StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WordProcessingUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Upload([FromForm] WordProcessingUploadRequest file)
     {
@@ -61,11 +60,7 @@ public class WordProcessingController : ControllerBase
         try
         {
             var document = await _editorService.UploadDocument(_mapper.Map<UploadDocumentRequest>(file));
-            if (document == null)
-            {
-                return BadRequest(ModelState.ValidationState);
-            }
-            return Ok(_mapper.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(document));
+            return Ok(_mapper.Map<WordProcessingUploadResponse>(document));
         }
         catch (Exception e)
         {
@@ -74,7 +69,7 @@ public class WordProcessingController : ControllerBase
     }
 
     [HttpPost("createNew")]
-    [ProducesResponseType(typeof(StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WordProcessingUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> NewDocument(WordProcessingNewDocumentRequest file)
     {
@@ -88,7 +83,7 @@ public class WordProcessingController : ControllerBase
         {
             return BadRequest(ModelState.ValidationState);
         }
-        return Ok(_mapper.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(document));
+        return Ok(_mapper.Map<WordProcessingUploadResponse>(document));
     }
 
     [HttpPost("edit")]
@@ -186,7 +181,7 @@ public class WordProcessingController : ControllerBase
     [HttpPost("update")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Update([FromBody] UpdateContentRequest request)
     {
         if (!ModelState.IsValid)
@@ -294,7 +289,7 @@ public class WordProcessingController : ControllerBase
     [HttpPost("stylesheets/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ICollection<StorageFile>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<StorageFile>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Stylesheets(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -315,7 +310,7 @@ public class WordProcessingController : ControllerBase
     [HttpGet("metaInfo/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(WordProcessingStorageInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> MetaInfo(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -334,7 +329,7 @@ public class WordProcessingController : ControllerBase
             return BadRequest("file not exist");
         }
 
-        return Ok(meta);
+        return Ok(_mapper.Map<WordProcessingStorageInfo>(meta));
     }
 
     [HttpGet("supportedFormats")]

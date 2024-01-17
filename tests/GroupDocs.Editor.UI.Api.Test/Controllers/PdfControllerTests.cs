@@ -5,7 +5,6 @@ using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
-using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
@@ -22,18 +21,18 @@ public class PdfControllerTests
 {
     private readonly MockRepository mockRepository;
 
-    private readonly Mock<IEditorService<PdfLoadOptions, PdfEditOptions>> _mockEditorService;
+    private readonly Mock<IPdfEditorService> _mockEditorService;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IStorage> _mockStorage;
-    private readonly Mock<IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions>> _mockMetaFileStorageCache;
+    private readonly Mock<IPdfStorageCache> _mockMetaFileStorageCache;
 
     public PdfControllerTests()
     {
         mockRepository = new MockRepository(MockBehavior.Strict);
-        _mockEditorService = mockRepository.Create<IEditorService<PdfLoadOptions, PdfEditOptions>>();
+        _mockEditorService = mockRepository.Create<IPdfEditorService>();
         _mockMapper = mockRepository.Create<IMapper>();
         _mockStorage = mockRepository.Create<IStorage>();
-        _mockMetaFileStorageCache = mockRepository.Create<IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions>>();
+        _mockMetaFileStorageCache = mockRepository.Create<IPdfStorageCache>();
     }
 
     private PdfController CreatePdfController()
@@ -60,19 +59,7 @@ public class PdfControllerTests
             File = formFile
         };
         UploadDocumentRequest uploadDocumentRequest = new() { FileName = "fixed.pdf", Stream = stream };
-        DocumentUploadResponse<PdfLoadOptions> documentUploadResponse = new()
-        {
-            DocumentCode = documentCode,
-            DocumentInfo = new StorageDocumentInfo
-            {
-                Format = FixedLayoutFormats.Pdf,
-                FamilyFormat = "fixed",
-                IsEncrypted = false,
-                PageCount = 10,
-                Size = 258
-            },
-            OriginalFile = new StorageFile { DocumentCode = documentCode }
-        };
+
         StorageMetaFile<PdfLoadOptions, PdfEditOptions> storageMetaFile =
             new()
             {
@@ -88,7 +75,6 @@ public class PdfControllerTests
                 OriginalFile = new StorageFile { DocumentCode = documentCode }
             };
         _mockMapper.Setup(a => a.Map<UploadDocumentRequest>(file)).Returns(uploadDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<PdfLoadOptions>>(storageMetaFile)).Returns(documentUploadResponse);
         _mockEditorService.Setup(a => a.UploadDocument(uploadDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
         var result = await pdfController.Upload(file);
@@ -97,63 +83,9 @@ public class PdfControllerTests
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<PdfLoadOptions>;
+        var responseDocument = okObjectResult?.Value as StorageMetaFile<PdfLoadOptions, PdfEditOptions>;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(documentUploadResponse);
-        mockRepository.VerifyAll();
-    }
-
-    [Fact]
-    public async Task NewDocument()
-    {
-        // Arrange
-        var pdfController = CreatePdfController();
-        Guid documentCode = Guid.NewGuid();
-        PdfNewDocumentRequest file = new()
-        {
-            FileName = "text.pdf"
-        };
-        CreateDocumentRequest createDocumentRequest = new() { FileName = "text.pdf", Format = FixedLayoutFormats.Pdf };
-        StorageMetaFile<PdfLoadOptions, PdfEditOptions> storageMetaFile =
-            new()
-            {
-                DocumentCode = documentCode,
-                DocumentInfo = new StorageDocumentInfo
-                {
-                    Format = FixedLayoutFormats.Pdf,
-                    FamilyFormat = "fixed",
-                    IsEncrypted = false,
-                    PageCount = 10,
-                    Size = 258
-                },
-                OriginalFile = new StorageFile { DocumentCode = documentCode }
-            };
-        DocumentUploadResponse<PdfLoadOptions> uploadResponse = new()
-        {
-            DocumentCode = documentCode,
-            DocumentInfo = new StorageDocumentInfo
-            {
-                Format = FixedLayoutFormats.Pdf,
-                FamilyFormat = "fixed",
-                IsEncrypted = false,
-                PageCount = 10,
-                Size = 258
-            },
-            OriginalFile = new StorageFile { DocumentCode = documentCode }
-        };
-        _mockMapper.Setup(a => a.Map<CreateDocumentRequest>(file)).Returns(createDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<PdfLoadOptions>>(storageMetaFile)).Returns(uploadResponse);
-        _mockEditorService.Setup(a => a.CreateDocument(createDocumentRequest)).ReturnsAsync(storageMetaFile);
-        // Act
-        var result = await pdfController.NewDocument(file);
-
-        // Assert
-        result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
-        okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<PdfLoadOptions>;
-        responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(uploadResponse);
+        responseDocument.Should().Be(storageMetaFile);
         mockRepository.VerifyAll();
     }
 
@@ -501,19 +433,20 @@ public class PdfControllerTests
                     }}
                 }
             };
+        var storageMeta = new PdfStorageInfo() { DocumentCode = documentCode };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-
+        _mockMapper.Setup(a => a.Map<PdfStorageInfo>(storageMetaFile))
+            .Returns(storageMeta);
         // Act
-        var result = await pdfController.MetaInfo(
-            documentCode);
+        var result = await pdfController.MetaInfo(documentCode);
 
         // Assert
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as StorageMetaFile<PdfLoadOptions, PdfEditOptions>;
+        var responseDocument = okObjectResult?.Value as PdfStorageInfo;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(storageMetaFile);
+        responseDocument.Should().Be(storageMeta);
         mockRepository.VerifyAll();
     }
 

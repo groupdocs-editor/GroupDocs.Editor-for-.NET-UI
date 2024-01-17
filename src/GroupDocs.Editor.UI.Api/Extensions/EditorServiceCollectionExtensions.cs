@@ -1,5 +1,4 @@
-﻿using GroupDocs.Editor.Options;
-using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
+﻿using GroupDocs.Editor.UI.Api.AutoMapperProfiles;
 using GroupDocs.Editor.UI.Api.JsonConverters;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
@@ -45,12 +44,12 @@ public static class EditorServiceCollectionExtensions
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
-        services.AddScoped<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>, MetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>>();
-        services.AddTransient<IEditorService<PresentationLoadOptions, PresentationEditOptions>, EditorService<PresentationLoadOptions, PresentationEditOptions>>();
-        services.AddScoped<IMetaFileStorageCache<PdfLoadOptions, PdfEditOptions>, MetaFileStorageCache<PdfLoadOptions, PdfEditOptions>>();
-        services.AddTransient<IEditorService<PdfLoadOptions, PdfEditOptions>, EditorService<PdfLoadOptions, PdfEditOptions>>();
-        services.AddScoped<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>, MetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>>();
-        services.AddTransient<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>, EditorService<WordProcessingLoadOptions, WordProcessingEditOptions>>();
+        services.AddScoped<IPresentationStorageCache, PresentationStorageCache>();
+        services.AddTransient<IPresentationEditorService, PresentationEditorService>();
+        services.AddScoped<IPdfStorageCache, PdfStorageCache>();
+        services.AddTransient<IPdfEditorService, PdfEditorService>();
+        services.AddScoped<IWordProcessingStorageCache, WordProcessingStorageCache>();
+        services.AddTransient<IWordProcessingEditorService, WordProcessingEditorService>();
         services.AddScoped(typeof(IStorage), typeof(T));
         if (typeof(T) == typeof(AwsS3Storage))
         {

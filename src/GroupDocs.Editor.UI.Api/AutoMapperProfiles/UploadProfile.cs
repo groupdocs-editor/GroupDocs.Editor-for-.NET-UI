@@ -1,4 +1,5 @@
 using AutoMapper;
+using GroupDocs.Editor.Formats;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation;
@@ -24,6 +25,9 @@ public class UploadProfile : Profile
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<WordProcessingNewDocumentRequest, CreateDocumentRequest>()
+            .ForMember(dest => dest.Format,
+                opt => opt.MapFrom(src =>
+                    WordProcessingFormats.FromExtension(src.Format)))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newDocxDocument.{src.Format}" : src.FileName));
@@ -55,6 +59,9 @@ public class UploadProfile : Profile
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<PresentationNewDocumentRequest, CreateDocumentRequest>()
+            .ForMember(dest => dest.Format,
+                opt => opt.MapFrom(src =>
+                    PresentationFormats.FromExtension(src.Format)))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newPptxDocument.{src.Format}" : src.FileName));

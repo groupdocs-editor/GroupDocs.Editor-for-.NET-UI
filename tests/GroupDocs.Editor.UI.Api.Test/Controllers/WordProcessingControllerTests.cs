@@ -22,19 +22,19 @@ public class WordProcessingControllerTests
 {
     private readonly MockRepository mockRepository;
 
-    private readonly Mock<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>> _mockEditorService;
+    private readonly Mock<IWordProcessingEditorService> _mockEditorService;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IStorage> _mockStorage;
-    private readonly Mock<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>> _mockMetaFileStorageCache;
+    private readonly Mock<IWordProcessingStorageCache> _mockMetaFileStorageCache;
 
     public WordProcessingControllerTests()
     {
         mockRepository = new MockRepository(MockBehavior.Strict);
 
-        _mockEditorService = mockRepository.Create<IEditorService<WordProcessingLoadOptions, WordProcessingEditOptions>>();
+        _mockEditorService = mockRepository.Create<IWordProcessingEditorService>();
         _mockMapper = mockRepository.Create<IMapper>();
         _mockStorage = mockRepository.Create<IStorage>();
-        _mockMetaFileStorageCache = mockRepository.Create<IMetaFileStorageCache<WordProcessingLoadOptions, WordProcessingEditOptions>>();
+        _mockMetaFileStorageCache = mockRepository.Create<IWordProcessingStorageCache>();
     }
 
     private WordProcessingController CreateWordProcessingController()
@@ -61,7 +61,7 @@ public class WordProcessingControllerTests
             File = formFile
         };
         UploadDocumentRequest uploadDocumentRequest = new() { FileName = "document.docx", Stream = stream };
-        DocumentUploadResponse<WordProcessingLoadOptions> documentUploadResponse = new()
+        WordProcessingUploadResponse documentUploadResponse = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
@@ -89,7 +89,7 @@ public class WordProcessingControllerTests
                 OriginalFile = new StorageFile { DocumentCode = documentCode }
             };
         _mockMapper.Setup(a => a.Map<UploadDocumentRequest>(file)).Returns(uploadDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(storageMetaFile)).Returns(documentUploadResponse);
+        _mockMapper.Setup(a => a.Map<WordProcessingUploadResponse>(storageMetaFile)).Returns(documentUploadResponse);
         _mockEditorService.Setup(a => a.UploadDocument(uploadDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
         var result = await wordProcessingController.Upload(
@@ -99,7 +99,7 @@ public class WordProcessingControllerTests
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<WordProcessingLoadOptions>;
+        var responseDocument = okObjectResult?.Value as WordProcessingUploadResponse;
         responseDocument.Should().NotBeNull();
         responseDocument.Should().Be(documentUploadResponse);
         mockRepository.VerifyAll();
@@ -114,7 +114,7 @@ public class WordProcessingControllerTests
         WordProcessingNewDocumentRequest file = new()
         {
             FileName = "document.docx",
-            Format = WordProcessingFormats.Docx
+            Format = WordProcessingFormats.Docx.Extension
         };
         CreateDocumentRequest createDocumentRequest = new() { FileName = "document.docx", Format = WordProcessingFormats.Docx };
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
@@ -131,7 +131,7 @@ public class WordProcessingControllerTests
                 },
                 OriginalFile = new StorageFile { DocumentCode = documentCode }
             };
-        DocumentUploadResponse<WordProcessingLoadOptions> uploadResponse = new()
+        WordProcessingUploadResponse uploadResponse = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
@@ -145,17 +145,16 @@ public class WordProcessingControllerTests
             OriginalFile = new StorageFile { DocumentCode = documentCode }
         };
         _mockMapper.Setup(a => a.Map<CreateDocumentRequest>(file)).Returns(createDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<WordProcessingLoadOptions>>(storageMetaFile)).Returns(uploadResponse);
+        _mockMapper.Setup(a => a.Map<WordProcessingUploadResponse>(storageMetaFile)).Returns(uploadResponse);
         _mockEditorService.Setup(a => a.CreateDocument(createDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
-        var result = await wordProcessingController.NewDocument(
-            file);
+        var result = await wordProcessingController.NewDocument(file);
 
         // Assert
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<WordProcessingLoadOptions>;
+        var responseDocument = okObjectResult?.Value as WordProcessingUploadResponse;
         responseDocument.Should().NotBeNull();
         responseDocument.Should().Be(uploadResponse);
         mockRepository.VerifyAll();
@@ -583,8 +582,10 @@ public class WordProcessingControllerTests
                     }}
                 }
             };
+        WordProcessingStorageInfo wordProcessingStorageInfo = new WordProcessingStorageInfo()
+        { DocumentCode = documentCode };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-
+        _mockMapper.Setup(a => a.Map<WordProcessingStorageInfo>(storageMetaFile)).Returns(wordProcessingStorageInfo);
         // Act
         var result = await wordProcessingController.MetaInfo(
             documentCode);
@@ -592,9 +593,9 @@ public class WordProcessingControllerTests
         // Assert
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions>;
+        var responseDocument = okObjectResult?.Value as WordProcessingStorageInfo;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(storageMetaFile);
+        responseDocument.Should().Be(wordProcessingStorageInfo);
         mockRepository.VerifyAll();
     }
 

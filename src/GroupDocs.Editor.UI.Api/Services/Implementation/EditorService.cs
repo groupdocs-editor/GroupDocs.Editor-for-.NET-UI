@@ -89,7 +89,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// </summary>
     /// <param name="request">The request.</param>
     /// <returns></returns>
-    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> UploadDocument(UploadDocumentRequest request)
+    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>> UploadDocument(UploadDocumentRequest request)
     {
         try
         {
@@ -465,32 +465,43 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
 
     private async Task<EditableDocument> EditableDocumentFromMarkup(StorageSubFile<TEditOptions?> oneSubFile)
     {
-        var response =
-            await _storage.GetFileText(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode,
-                oneSubFile.EditedHtmlName));
-        if (response is not { IsSuccess: true } || response.Response == null)
+        try
         {
-            throw new ArgumentException("Cannot get a html file from storage", nameof(response.Response));
-        }
-
-        List<IHtmlResource> resources = new(oneSubFile.Resources.Count);
-        foreach (var oneFile in oneSubFile.Resources.Values)
-        {
-            var stream = await _storage.DownloadFile(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode, oneFile.FileName));
-
-            if (stream is not { IsSuccess: true } || stream.Response == null)
+            var response =
+                await _storage.GetFileText(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode,
+                    oneSubFile.EditedHtmlName));
+            if (response is not { IsSuccess: true } || response.Response == null)
             {
-                continue;
-            }
-            IHtmlResource parsedResource =
-                ResourceTypeDetector.TryDetectResource(stream.Response, oneFile.FileName, null);
-            if (parsedResource == null)
-            {
-                continue;
+                throw new ArgumentException("Cannot get a html file from storage", nameof(response.Response));
             }
 
-            resources.Add(parsedResource);
+            List<IHtmlResource> resources = new(oneSubFile.Resources.Count);
+            foreach (var oneFile in oneSubFile.Resources.Values)
+            {
+                var stream = await _storage.DownloadFile(Path.Combine(oneSubFile.DocumentCode.ToString(),
+                    oneSubFile.SubCode, oneFile.FileName));
+
+                if (stream is not { IsSuccess: true } || stream.Response == null)
+                {
+                    continue;
+                }
+
+                IHtmlResource parsedResource =
+                    ResourceTypeDetector.TryDetectResource(stream.Response, oneFile.FileName, null);
+                if (parsedResource == null)
+                {
+                    continue;
+                }
+
+                resources.Add(parsedResource);
+            }
+
+            return EditableDocument.FromMarkup(response.Response, resources);
         }
-        return EditableDocument.FromMarkup(response.Response, resources);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to generate EditableDocument from markup");
+            throw;
+        }
     }
 }

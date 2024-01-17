@@ -13,7 +13,7 @@ public class DocumentUploadResponse<TLoadOptions> where TLoadOptions : ILoadOpti
     /// </value>
     public StorageFile OriginalFile { get; set; }
 
-    public TLoadOptions? OriginalLoadOptions { get; set; }
+    public TLoadOptions OriginalLoadOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the document code.
@@ -31,3 +31,7 @@ public class DocumentUploadResponse<TLoadOptions> where TLoadOptions : ILoadOpti
     /// </value>
     public StorageDocumentInfo DocumentInfo { get; set; }
 }
+
+public class PresentationUploadResponse : DocumentUploadResponse<PresentationLoadOptions> { }
+public class PdfUploadResponse : DocumentUploadResponse<PdfLoadOptions> { }
+public class WordProcessingUploadResponse : DocumentUploadResponse<WordProcessingLoadOptions> { }

@@ -21,6 +21,5 @@ public class PdfUploadRequest
     /// <value>
     /// The load options.
     /// </value>
-    [Required]
-    public PdfLoadOptions LoadOptions { get; set; }
+    public PdfLoadOptions? LoadOptions { get; set; } = new();
 }

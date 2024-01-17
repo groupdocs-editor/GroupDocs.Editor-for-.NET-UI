@@ -16,7 +16,7 @@ public interface IEditorService<TLoadOptions, TEditOptions> : IDisposable
     public Task<StorageMetaFile<TLoadOptions, TEditOptions>?> CreateDocument(CreateDocumentRequest request);
     public IDocumentInfo GetDocumentInfo(Stream stream, TLoadOptions loadOptions);
 
-    public Task<StorageMetaFile<TLoadOptions, TEditOptions>?> UploadDocument(UploadDocumentRequest request);
+    public Task<StorageMetaFile<TLoadOptions, TEditOptions>> UploadDocument(UploadDocumentRequest request);
 
     public Task<string?> ConvertToHtml(StorageMetaFile<TLoadOptions, TEditOptions> metaFile, TEditOptions? editOptions,
         ILoadOptions? loadOptions);

@@ -22,19 +22,19 @@ public class PresentationControllerTests
 {
     private readonly MockRepository _mockRepository;
 
-    private readonly Mock<IEditorService<PresentationLoadOptions, PresentationEditOptions>> _mockEditorService;
+    private readonly Mock<IPresentationEditorService> _mockEditorService;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IStorage> _mockStorage;
-    private readonly Mock<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>> _mockMetaFileStorageCache;
+    private readonly Mock<IPresentationStorageCache> _mockMetaFileStorageCache;
 
     public PresentationControllerTests()
     {
         _mockRepository = new MockRepository(MockBehavior.Strict);
 
-        _mockEditorService = _mockRepository.Create<IEditorService<PresentationLoadOptions, PresentationEditOptions>>();
+        _mockEditorService = _mockRepository.Create<IPresentationEditorService>();
         _mockMapper = _mockRepository.Create<IMapper>();
         _mockStorage = _mockRepository.Create<IStorage>();
-        _mockMetaFileStorageCache = _mockRepository.Create<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>>();
+        _mockMetaFileStorageCache = _mockRepository.Create<IPresentationStorageCache>();
     }
 
     private PresentationController CreatePresentationController()
@@ -53,7 +53,7 @@ public class PresentationControllerTests
         // Arrange
         var presentationController = CreatePresentationController();
         Guid documentCode = Guid.NewGuid();
-        PresentationNewDocumentRequest file = new() { FileName = "presentation.pptx", Format = PresentationFormats.Pptx };
+        PresentationNewDocumentRequest file = new() { FileName = "presentation.pptx", Format = PresentationFormats.Pptx.Extension };
         CreateDocumentRequest createDocumentRequest = new() { FileName = "presentation.pptx", Format = PresentationFormats.Pptx };
         StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> storageMetaFile =
             new()
@@ -69,7 +69,7 @@ public class PresentationControllerTests
                 },
                 OriginalFile = new StorageFile { DocumentCode = documentCode }
             };
-        DocumentUploadResponse<PresentationLoadOptions> uploadResponse = new()
+        PresentationUploadResponse uploadResponse = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
@@ -83,7 +83,7 @@ public class PresentationControllerTests
             OriginalFile = new StorageFile { DocumentCode = documentCode }
         };
         _mockMapper.Setup(a => a.Map<CreateDocumentRequest>(file)).Returns(createDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<PresentationLoadOptions>>(storageMetaFile)).Returns(uploadResponse);
+        _mockMapper.Setup(a => a.Map<PresentationUploadResponse>(storageMetaFile)).Returns(uploadResponse);
         _mockEditorService.Setup(a => a.CreateDocument(createDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
         var result = await presentationController.CreateNewDocument(file);
@@ -92,7 +92,7 @@ public class PresentationControllerTests
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<PresentationLoadOptions>;
+        var responseDocument = okObjectResult?.Value as PresentationUploadResponse;
         responseDocument.Should().NotBeNull();
         responseDocument.Should().Be(uploadResponse);
         _mockRepository.VerifyAll();
@@ -109,7 +109,7 @@ public class PresentationControllerTests
         IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
         PresentationUploadRequest file = new() { File = formFile };
         UploadDocumentRequest uploadDocumentRequest = new() { FileName = "presentation.docx", Stream = stream };
-        DocumentUploadResponse<PresentationLoadOptions> documentUploadResponse = new()
+        PresentationUploadResponse documentUploadResponse = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
@@ -137,7 +137,7 @@ public class PresentationControllerTests
                 OriginalFile = new StorageFile { DocumentCode = documentCode }
             };
         _mockMapper.Setup(a => a.Map<UploadDocumentRequest>(file)).Returns(uploadDocumentRequest);
-        _mockMapper.Setup(a => a.Map<DocumentUploadResponse<PresentationLoadOptions>>(storageMetaFile)).Returns(documentUploadResponse);
+        _mockMapper.Setup(a => a.Map<PresentationUploadResponse>(storageMetaFile)).Returns(documentUploadResponse);
         _mockEditorService.Setup(a => a.UploadDocument(uploadDocumentRequest)).ReturnsAsync(storageMetaFile);
         // Act
         var result = await presentationController.Upload(file);
@@ -146,7 +146,7 @@ public class PresentationControllerTests
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as DocumentUploadResponse<PresentationLoadOptions>;
+        var responseDocument = okObjectResult?.Value as PresentationUploadResponse;
         responseDocument.Should().NotBeNull();
         responseDocument.Should().Be(documentUploadResponse);
         _mockRepository.VerifyAll();
@@ -563,7 +563,9 @@ public class PresentationControllerTests
                         }}
                 }
             };
+        PresentationStorageInfo presentationStorageInfo = new PresentationStorageInfo() { DocumentCode = documentCode };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
+        _mockMapper.Setup(a => a.Map<PresentationStorageInfo>(storageMetaFile)).Returns(presentationStorageInfo);
         // Act
         var result = await presentationController.MetaInfo(documentCode);
 
@@ -571,9 +573,9 @@ public class PresentationControllerTests
         result.Should().NotBeNull();
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>;
+        var responseDocument = okObjectResult?.Value as PresentationStorageInfo;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(storageMetaFile);
+        responseDocument.Should().Be(presentationStorageInfo);
         _mockRepository.VerifyAll();
     }
 
