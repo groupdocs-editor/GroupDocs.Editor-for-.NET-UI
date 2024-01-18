@@ -1,8 +1,5 @@
 ﻿using FluentAssertions;
-using GroupDocs.Editor.Formats;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
-using GroupDocs.Editor.UI.Api.Models.Storage;
-using GroupDocs.Editor.UI.Api.Models.Storage.Requests;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
@@ -15,7 +12,6 @@ namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation;
 public class LocalStorageTests : IDisposable
 {
     private readonly MockRepository _mockRepository;
-
     private readonly IOptions<LocalStorageOptions> _mockOptions;
     private readonly Mock<IIdGeneratorService> _mockIdGeneratorService;
 
@@ -29,14 +25,11 @@ public class LocalStorageTests : IDisposable
         };
         _mockOptions = Microsoft.Extensions.Options.Options.Create(opt);
         _mockIdGeneratorService = _mockRepository.Create<IIdGeneratorService>();
-        if (!Directory.Exists(_mockOptions.Value.RootFolder))
-        {
-            Directory.CreateDirectory(_mockOptions.Value.RootFolder);
-        }
     }
 
     private LocalStorage CreateLocalStorage()
     {
+        Directory.CreateDirectory("files");
         return new LocalStorage(
             new NullLogger<LocalStorage>(),
             _mockOptions,
@@ -44,49 +37,26 @@ public class LocalStorageTests : IDisposable
     }
 
     [Fact]
-    public async Task UploadOriginalFiles()
-    {
-        // Arrange
-        var localStorage = CreateLocalStorage();
-        using FileContent file = new();
-        file.FileName = "WordProcessing.docx";
-        file.ResourceStream = new MemoryStream();
-        StorageDocumentInfo info = new()
-        { Format = WordProcessingFormats.Docx, IsEncrypted = false, PageCount = 2, Size = 2222 };
-
-        IEnumerable<UploadOriginalRequest> files = new List<UploadOriginalRequest>
-        {
-            new() {DocumentInfo = info, FileContent = file}
-        };
-        Guid code = Guid.NewGuid();
-        _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(code);
-
-        // Act
-        var result = await localStorage.UploadFiles(files);
-
-        // Assert
-        result.Should().HaveCount(1);
-        _mockRepository.VerifyAll();
-    }
-
-    [Fact]
     public async Task SaveFile()
     {
         // Arrange
         var localStorage = CreateLocalStorage();
-        using FileContent file = new();
-        file.FileName = "test.docx";
-        file.ResourceStream = new MemoryStream();
+        await using Stream memoryStream = new MemoryStream();
+        using FileContent file = new()
+        {
+            FileName = "test.docx",
+            ResourceStream = memoryStream
+        };
+
         IEnumerable<FileContent> fileContents = new List<FileContent> { file };
         Guid documentCode = Guid.NewGuid();
 
         // Act
-        var result = await localStorage.SaveFile(
-            fileContents,
-            documentCode);
+        var result = await localStorage.SaveFile(fileContents, documentCode);
 
         // Assert
         result.Should().HaveCount(1);
+        File.Exists(Path.Combine(_mockOptions.Value.RootFolder, documentCode.ToString(), "test.docx")).Should().BeTrue();
         _mockRepository.VerifyAll();
     }
 
@@ -103,6 +73,7 @@ public class LocalStorageTests : IDisposable
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);
+        Directory.Exists(Path.Combine("files", "toDelete")).Should().BeFalse();
         _mockRepository.VerifyAll();
     }
 
@@ -119,6 +90,7 @@ public class LocalStorageTests : IDisposable
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);
+        File.Exists(path).Should().BeFalse();
         _mockRepository.VerifyAll();
     }
 
@@ -131,13 +103,12 @@ public class LocalStorageTests : IDisposable
         await File.WriteAllTextAsync(path, "test");
 
         // Act
-        var response = await localStorage.DownloadFile("toDelete.txt");
+        using var result = await localStorage.DownloadFile("toDelete.txt");
 
         // Assert
-        response.Should().NotBeNull();
-        response.Status.Should().Be(StorageActionStatus.Success);
-        response.Response.Should().NotBeNull();
-        await response.Response.DisposeAsync();
+        result.Should().NotBeNull();
+        result.Status.Should().Be(StorageActionStatus.Success);
+        result.Response.Should().NotBeNull();
         _mockRepository.VerifyAll();
     }
 
@@ -157,26 +128,6 @@ public class LocalStorageTests : IDisposable
         response.Response.Should().Be("test");
         _mockRepository.VerifyAll();
     }
-
-    [Fact]
-    public async Task UpdateHtmlContent()
-    {
-        // Arrange
-        var localStorage = CreateLocalStorage();
-        Guid documentCode = Guid.NewGuid();
-        StorageSubFile currentContent = new() { DocumentCode = documentCode, SubCode = 0, SourceDocumentName = "text.docx" };
-        const string htmlContents = "test";
-
-        // Act
-        var response = await localStorage.UpdateHtmlContent(currentContent, htmlContents);
-        // Assert
-        response.Should().NotBeNull();
-        response.Status.Should().Be(StorageActionStatus.Success);
-        response.Response.Should().NotBeNull();
-        response.Response.IsEdited.Should().BeTrue();
-        _mockRepository.VerifyAll();
-    }
-
     public void Dispose()
     {
         Dispose(true);

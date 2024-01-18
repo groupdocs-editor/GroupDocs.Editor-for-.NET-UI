@@ -8,13 +8,13 @@ using GroupDocs.Editor.UI.Api.Services.Interfaces;
 
 namespace GroupDocs.Editor.UI.Api.Services.Options;
 
-internal sealed class StorageCallback : IHtmlSavingCallback
+internal sealed class StorageCallback<TEditOptions> : IHtmlSavingCallback where TEditOptions : IEditOptions
 {
     private readonly IStorage _storage;
-    private readonly StorageSubFile _metaFile;
+    private readonly StorageSubFile<TEditOptions> _metaFile;
 
 
-    public StorageCallback(IStorage storage, StorageSubFile metaFile)
+    public StorageCallback(IStorage storage, StorageSubFile<TEditOptions> metaFile)
     {
         _storage = storage;
         _metaFile = metaFile;
@@ -22,30 +22,27 @@ internal sealed class StorageCallback : IHtmlSavingCallback
 
     public string SaveOneResource(IHtmlResource resource)
     {
+        if (_metaFile.Resources.TryGetValue(resource.FilenameWithExtension, out var fileResource))
+        {
+            return fileResource.FileLink;
+        }
+
+        ResourceType type = resource switch
+        {
+            IImageResource _ => ResourceType.Image,
+            HtmlCss.Resources.Audio.Mp3Audio _ => ResourceType.Audio,
+            HtmlCss.Resources.Fonts.FontResourceBase _ => ResourceType.Font,
+            CssText _ => ResourceType.Stylesheet,
+            _ => ResourceType.Image
+        };
         var response = _storage
-            .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent } },
-                _metaFile.DocumentCode, _metaFile.SubCode.ToString()).Result.FirstOrDefault();
+            .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent, ResourceType = type } },
+                _metaFile.DocumentCode, _metaFile.SubCode).Result.FirstOrDefault();
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return string.Empty;
         }
-        switch (resource)
-        {
-            case IImageResource _:
-                _metaFile.Images.Add(response.Response);
-                break;
-            case HtmlCss.Resources.Audio.Mp3Audio _:
-                _metaFile.Audios.Add(response.Response);
-                break;
-            case HtmlCss.Resources.Fonts.FontResourceBase _:
-                _metaFile.Fonts.Add(response.Response);
-                break;
-            case CssText _:
-                _metaFile.Stylesheets.Add(response.Response);
-                break;
-            case null:
-                throw new ArgumentNullException(nameof(resource));
-        }
+        _metaFile.Resources.Add(response.Response.FileName, response.Response);
 
         return response.Response.FileLink;
     }

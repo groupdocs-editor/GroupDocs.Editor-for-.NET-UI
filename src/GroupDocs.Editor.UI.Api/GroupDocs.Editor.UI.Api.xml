@@ -52,18 +52,62 @@
             <param name="resource">The resource.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PdfController.PreviewImages(GroupDocs.Editor.UI.Api.Controllers.RequestModels.PreviewRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PdfController.Stylesheets(System.Guid)">
             <summary>
-            Get all previews document as the images.
+            Get all stylesheets in the specified document.
+            </summary>
+            <param name="documentCode">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.CreateNewDocument(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationNewDocumentRequest)">
+            <summary>
+            allow to create new document
+            </summary>
+            <param name="file"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.Upload(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationUploadRequest)">
+            <summary>
+            This method uploads the specified document while converting it to HTML based on the provided input options.
+            </summary>
+            <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.Download(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationDownloadRequest)">
+            <summary>
+            Downloads a specific document in the target format. If the original document is available, it will be converted.
+            If there are edited versions, the latest one will be used for conversion.
+            </summary>
+            <param name="request">The request with specific document code, load and save option.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.Update(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequestPaged)">
+            <summary>
+            Updates the specified HTML content.
             </summary>
             <param name="request">The request.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PdfController.Stylesheets(GroupDocs.Editor.UI.Api.Controllers.RequestModels.StylesheetsRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.UploadResource(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequestPaged)">
+            <summary>
+            Uploads the resource and allows replacing an existing one when specifying the OldResourceName.
+            </summary>
+            <param name="resource">The resource.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.Previews(System.Guid)">
+            <summary>
+            Get all previews document as the images.
+            </summary>
+            <param name="documentCode">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.PresentationController.Stylesheets(System.Guid,System.Int32)">
             <summary>
             Get all stylesheets in the specified document.
             </summary>
-            <param name="request">The request.</param>
+            <param name="documentCode"></param>
+            <param name="slideNumber"></param>
             <returns></returns>
         </member>
         <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.ContentRequest">
@@ -124,7 +168,15 @@
             The save options.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf.PdfNewDocumentRequest.EditOptions">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf.PdfEditRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf.PdfEditRequest.EditOptions">
             <summary>
             Gets or sets the edit options.
             </summary>
@@ -148,25 +200,12 @@
             The load options.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf.PdfUploadRequest.EditOptions">
+        <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationDownloadRequest">
             <summary>
-            Gets or sets the edit options.
-            </summary>
-            <value>
-            The edit options.
-            </value>
-        </member>
-        <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.PreviewRequest">
-            <summary>
-            Retrieves all previews based on the provided document Code and load options.
+            Request for Downloads a specific document in the target format.
             </summary>
         </member>
-        <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.StylesheetsRequest">
-            <summary>
-            Retrieves all stylesheets based on the provided Code and SubIndex.
-            </summary>
-        </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.StylesheetsRequest.DocumentCode">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationDownloadRequest.DocumentCode">
             <summary>
             Gets or sets the document code.
             </summary>
@@ -174,12 +213,52 @@
             The document code.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.StylesheetsRequest.SubIndex">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationDownloadRequest.Format">
             <summary>
-            The target subfolder index-name where the files should be saved.
+            Gets or sets the format.
             </summary>
             <value>
-            The index of the sub.
+            The format.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationDownloadRequest.SaveOptions">
+            <summary>
+            Gets or sets the save options.
+            </summary>
+            <value>
+            The save options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationEditRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationEditRequest.EditOptions">
+            <summary>
+            Gets or sets the edit options.
+            </summary>
+            <value>
+            The edit options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationUploadRequest.File">
+            <summary>
+            Gets or sets the file.
+            </summary>
+            <value>
+            The file.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation.PresentationUploadRequest.LoadOptions">
+            <summary>
+            Gets or sets the load options.
+            </summary>
+            <value>
+            The load options.
             </value>
         </member>
         <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequest">
@@ -203,7 +282,7 @@
             The HTML contents.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequest.SubIndex">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequestPaged.SubIndex">
             <summary>
             The target subfolder index-name where the files should be saved.
             </summary>
@@ -240,20 +319,20 @@
             The old name of the image.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequest.SubIndex">
-            <summary>
-            The target subfolder index-name where the files should be saved.
-            </summary>
-            <value>
-            The index of the sub.
-            </value>
-        </member>
         <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequest.ResourceType">
             <summary>
             Gets or sets the type of the resource that try to update.
             </summary>
             <value>
             The type of the resource.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequestPaged.SubIndex">
+            <summary>
+            The target subfolder index-name where the files should be saved.
+            </summary>
+            <value>
+            The index of the sub.
             </value>
         </member>
         <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingDownloadRequest">
@@ -277,14 +356,6 @@
             The format.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingDownloadRequest.LoadOptions">
-            <summary>
-            Gets or sets the load options.
-            </summary>
-            <value>
-            The load options.
-            </value>
-        </member>
         <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingDownloadRequest.SaveOptions">
             <summary>
             Gets or sets the save options.
@@ -293,7 +364,15 @@
             The save options.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingNewDocumentRequest.EditOptions">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingEditRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingEditRequest.EditOptions">
             <summary>
             Gets or sets the edit options.
             </summary>
@@ -317,14 +396,6 @@
             The load options.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingUploadRequest.EditOptions">
-            <summary>
-            Gets or sets the edit options.
-            </summary>
-            <value>
-            The edit options.
-            </value>
-        </member>
         <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordToPdfDownloadRequest.DocumentCode">
             <summary>
             Gets or sets the document code.
@@ -333,20 +404,36 @@
             The document code.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordToPdfDownloadRequest.LoadOptions">
-            <summary>
-            Gets or sets the load options.
-            </summary>
-            <value>
-            The load options.
-            </value>
-        </member>
         <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordToPdfDownloadRequest.SaveOptions">
             <summary>
             Gets or sets the save options.
             </summary>
             <value>
             The save options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.ResponseModels.DocumentUploadResponse`1.OriginalFile">
+            <summary>
+            Gets or sets the original document information.
+            </summary>
+            <value>
+            The original file.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.ResponseModels.DocumentUploadResponse`1.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.ResponseModels.DocumentUploadResponse`1.DocumentInfo">
+            <summary>
+            Gets or sets the document information.
+            </summary>
+            <value>
+            The document information.
             </value>
         </member>
         <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.Upload(GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingUploadRequest)">
@@ -378,30 +465,33 @@
             <param name="resource">The resource.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.PreviewImages(GroupDocs.Editor.UI.Api.Controllers.RequestModels.PreviewRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.Previews(System.Guid)">
             <summary>
             Get all previews document as the images.
             </summary>
-            <param name="request">The request.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.Stylesheets(GroupDocs.Editor.UI.Api.Controllers.RequestModels.StylesheetsRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.Stylesheets(System.Guid)">
             <summary>
             Get all stylesheets in the specified document.
             </summary>
-            <param name="request">The request.</param>
+            <param name="documentCode"></param>
             <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorLicense``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds a license service for the GroupDocs.Editor for .NET.
+            You can choose from available license services such as <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.Base64FileLicenseService"/>,
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.RemoteUrlFileLicenseService"/>, or <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.LocalFileLicenseService"/> with the corresponding
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Options.LicenseOptions"/> by specifying the <see cref="T:GroupDocs.Editor.UI.Api.Services.Options.LicenseSourceType"/>.
+            </summary>
+            <typeparam name="T">The type of the license service. Choose from <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.Base64FileLicenseService"/>,
+            <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.RemoteUrlFileLicenseService"/>, or <see cref="T:GroupDocs.Editor.UI.Api.Services.Licensing.LocalFileLicenseService"/>.</typeparam>
+            <param name="services">The services' collection.</param>
+            <param name="configuration">The configuration containing license options.</param>
+            <returns>The modified services collection.</returns>
         </member>
         <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditor``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            Adds DI service required by the editor.
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="services">The services.</param>
-            <param name="configuration">The configuration.</param>
-            <returns></returns>
-        </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorTrial``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Adds DI service required by the editor in trial mode.
             </summary>
@@ -410,12 +500,11 @@
             <param name="configuration">The configuration.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorControllers(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration,System.Action{Microsoft.AspNetCore.Mvc.JsonOptions},System.Action{Microsoft.AspNetCore.Mvc.MvcOptions})">
+        <member name="M:GroupDocs.Editor.UI.Api.Extensions.EditorServiceCollectionExtensions.AddEditorControllers(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Microsoft.AspNetCore.Mvc.JsonOptions},System.Action{Microsoft.AspNetCore.Mvc.MvcOptions})">
             <summary>
             Adds the editor controllers with default JsonSerializerOptions.
             </summary>
             <param name="services">The services.</param>
-            <param name="configuration"></param>
             <param name="jsonOption">The json option.</param>
             <param name="mvcOption">The MVC option.</param>
             <returns></returns>
@@ -449,12 +538,12 @@
             The resource stream.
             </value>
         </member>
-        <member name="T:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile">
+        <member name="T:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2">
             <summary>
             Represents the structure of a storage system that stores original documents, previews, and converted documents.
             </summary>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile.OriginalFile">
+        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2.OriginalFile">
             <summary>
             Gets or sets the original document information.
             </summary>
@@ -462,7 +551,7 @@
             The original file.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile.DocumentCode">
+        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2.DocumentCode">
             <summary>
             Gets or sets the document code.
             </summary>
@@ -470,7 +559,7 @@
             The document code.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile.DocumentInfo">
+        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2.DocumentInfo">
             <summary>
             Gets or sets the document information.
             </summary>
@@ -478,7 +567,7 @@
             The document information.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile.PreviewImages">
+        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2.PreviewImages">
             <summary>
             Gets or sets the preview images structure links.
             </summary>
@@ -486,7 +575,7 @@
             The preview images.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile.StorageSubFiles">
+        <member name="P:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile`2.StorageSubFiles">
             <summary>
             The converted documents is located in the specified subfolder.
             For WordProcessing, the subfolder index is always 0. For Presentation and Spreadsheet, the subfolder index corresponds to the index of the worksheet or slide.
@@ -495,7 +584,28 @@
             The storage sub files.
             </value>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.GetDocumentInfo(System.IO.Stream,GroupDocs.Editor.Options.ILoadOptions)">
+        <member name="M:GroupDocs.Editor.UI.Api.Models.Storage.StorageSubFile`1.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:GroupDocs.Editor.UI.Api.Models.Storage.StorageSubFile`1"/> class.
+            </summary>
+            <param name="originalDocumentName">Name of the original document.</param>
+            <param name="subCode">The sub code.</param>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.CreateDocument(GroupDocs.Editor.UI.Api.Models.Editor.CreateDocumentRequest)">
+            <summary>
+            Creates the new document by fomat.
+            </summary>
+            <param name="request">The request with file name and expected format.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.UploadDocument(GroupDocs.Editor.UI.Api.Models.Editor.UploadDocumentRequest)">
+            <summary>
+            Convert the document to HTML and save to storage.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.GetDocumentInfo(System.IO.Stream,`0)">
             <summary>
             Gets the document information.
             </summary>
@@ -503,60 +613,36 @@
             <param name="loadOptions">The load options.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.SaveDocument(GroupDocs.Editor.UI.Api.Models.Editor.SaveDocumentRequest)">
-            <summary>
-            Convert the document to HTML and save to storage.
-            </summary>
-            <param name="request">The request.</param>
-            <returns></returns>
-        </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.ConvertToHtml(System.Guid,GroupDocs.Editor.Options.IEditOptions,GroupDocs.Editor.Options.ILoadOptions)">
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.ConvertToHtml(GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile{`0,`1},`1,GroupDocs.Editor.Options.ILoadOptions)">
             <summary>
             Converts the target document, retrieved from storage, to HTML.
             </summary>
-            <param name="documentCode">The document folder code.</param>
+            <param name="metaFile">code of the document.</param>
             <param name="editOptions">The edit options.</param>
             <param name="loadOptions">The load options.</param>
+            <exception cref="T:System.ArgumentNullException">in case when document's metafile is not exist or cannot download original file.</exception>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.ConvertToHtml(GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile,GroupDocs.Editor.Options.IEditOptions,GroupDocs.Editor.Options.ILoadOptions)">
-            <summary>
-            Converts the target document, retrieved from storage, to HTML.
-            </summary>
-            <param name="metaFile">The meta file.</param>
-            <param name="editOptions">The edit options.</param>
-            <param name="loadOptions">The load options.</param>
-            <returns></returns>
-        </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.ConvertPreviews(System.Guid,GroupDocs.Editor.Options.ILoadOptions)">
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.ConvertPreviews(System.Guid)">
             <summary>
             Converts the target document, retrieved from storage, to preview images list.
             </summary>
             <param name="documentCode">The document folder code.</param>
-            <param name="loadOptions">The load options.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.SaveToPdf(GroupDocs.Editor.UI.Api.Models.Editor.DownloadPdfRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.SaveToPdf(GroupDocs.Editor.UI.Api.Models.Editor.DownloadPdfRequest)">
             <summary>
             Saves the document to PDF format. If an edited version of the document exists, it will be converted; otherwise, the original document will be converted.
             </summary>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService.ConvertToDocument(GroupDocs.Editor.UI.Api.Models.Editor.DownloadDocumentRequest)">
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.ConvertToDocument(GroupDocs.Editor.UI.Api.Models.Editor.DownloadDocumentRequest)">
             <summary>
             Converts the document to the specified output format.
             If an edited version of the document exists, it will be converted; otherwise, the original document will be converted.
             </summary>
             <param name="request">The save option.</param>
             <returns></returns>
-        </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.LocalStorage.UploadFiles(System.Collections.Generic.IEnumerable{GroupDocs.Editor.UI.Api.Models.Storage.Requests.UploadOriginalRequest})">
-            <summary>
-            Uploads the original files and initializes a StorageMetaFile entity for tracking metadata.
-            </summary>
-            <param name="files">The original files to be uploaded.</param>
-            <returns>An instance of the <see cref="T:GroupDocs.Editor.UI.Api.Models.Storage.StorageMetaFile"/> entity for metadata initialization.</returns>
-            <exception cref="T:System.IO.FileLoadException"></exception>
         </member>
         <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.LocalStorage.SaveFile(System.Collections.Generic.IEnumerable{GroupDocs.Editor.UI.Api.Models.DocumentConvertor.FileContent},System.Guid,System.String)">
             <summary>

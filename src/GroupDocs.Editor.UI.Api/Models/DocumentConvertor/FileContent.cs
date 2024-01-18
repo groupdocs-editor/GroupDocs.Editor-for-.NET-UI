@@ -1,4 +1,6 @@
-﻿namespace GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
+﻿using GroupDocs.Editor.UI.Api.Models.Storage;
+
+namespace GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 
 /// <summary>
 /// Present one document or document's resource that was integrated into document.
@@ -11,7 +13,7 @@ public class FileContent : IDisposable
     /// <value>
     /// The name of the file.
     /// </value>
-    public string FileName { get; set; }
+    public string FileName { get; init; }
 
     /// <summary>
     /// Gets or sets the resource stream.
@@ -19,7 +21,9 @@ public class FileContent : IDisposable
     /// <value>
     /// The resource stream.
     /// </value>
-    public Stream ResourceStream { get; set; }
+    public Stream ResourceStream { get; init; }
+
+    public ResourceType ResourceType { get; init; }
 
     public void Dispose()
     {

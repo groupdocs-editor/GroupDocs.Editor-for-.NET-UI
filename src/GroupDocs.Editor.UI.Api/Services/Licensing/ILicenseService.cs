@@ -2,7 +2,7 @@
 
 namespace GroupDocs.Editor.UI.Api.Services.Licensing;
 
-internal interface ILicenseService : IHostedService
+public interface ILicenseService : IHostedService
 {
     public void SetLicense();
 }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace GroupDocs.Editor.UI.Api.Services.Licensing;
 
-internal class LocalFileLicenseService : LicenseServiceBase<LocalFileLicenseService>
+public class LocalFileLicenseService : LicenseServiceBase<LocalFileLicenseService>
 {
     public LocalFileLicenseService(
         IHostApplicationLifetime appLifetime,

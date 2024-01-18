@@ -57,6 +57,33 @@ public class LocalFileControllerTests
     }
 
     [Fact]
+    public async Task DownloadPresentationFromSubDocument()
+    {
+        // Arrange
+        var localFileController = CreateLocalFileController();
+        Guid documentCode = Guid.NewGuid();
+        const int subDocumentIndex = 0;
+        const string fileName = "Presentation.pptx";
+        await using var stream = new MemoryStream();
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), subDocumentIndex.ToString(),
+            HttpUtility.UrlDecode(fileName)))).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
+        // Act
+        var result = await localFileController.DownloadFromSubDocument(
+            documentCode,
+            subDocumentIndex,
+            fileName);
+
+        // Assert
+        result.Should().NotBeNull();
+        var file = result as FileStreamResult;
+        file.Should().NotBeNull();
+        file.FileStream.Should().BeSameAs(stream);
+        file.FileDownloadName.Should().Be(fileName);
+        file.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        _mockRepository.VerifyAll();
+    }
+
+    [Fact]
     public async Task Download()
     {
         // Arrange

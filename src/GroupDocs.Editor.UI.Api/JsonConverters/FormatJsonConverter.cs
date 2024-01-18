@@ -22,6 +22,11 @@ public class FormatJsonConverter : JsonConverter<IDocumentFormat>
         {
             return FixedLayoutFormats.FromExtension(reader.GetString());
         }
+        if (PresentationFormats.All.Any(a =>
+                string.Equals(a.Extension, text, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return PresentationFormats.FromExtension(reader.GetString());
+        }
         return WordProcessingFormats.Docx;
     }
 

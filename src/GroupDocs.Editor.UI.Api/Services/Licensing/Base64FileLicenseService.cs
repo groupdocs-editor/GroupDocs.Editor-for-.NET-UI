@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace GroupDocs.Editor.UI.Api.Services.Licensing;
 
-internal class Base64FileLicenseService : LicenseServiceBase<Base64FileLicenseService>
+public class Base64FileLicenseService : LicenseServiceBase<Base64FileLicenseService>
 {
     public Base64FileLicenseService(
         IHostApplicationLifetime appLifetime,

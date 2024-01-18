@@ -1,19 +1,42 @@
-﻿using System.Text.Json.Serialization;
+﻿using GroupDocs.Editor.Options;
+using System.Text.Json.Serialization;
 
 namespace GroupDocs.Editor.UI.Api.Models.Storage;
 
-public class StorageSubFile
+public class StorageSubFile<TEditOptions> where TEditOptions : IEditOptions
 {
-    public int SubCode { get; set; }
-    public bool IsEdited { get; set; }
-    public StorageFile SourceDocument { get; set; }
-    public string SourceDocumentName { get; set; }
-    public string EditedHtmlName => $"{Path.GetFileNameWithoutExtension(SourceDocumentName)}.html";
-    public Guid DocumentCode { get; set; }
-    public ICollection<StorageFile> Images { get; set; } = new List<StorageFile>();
-    public ICollection<StorageFile> Stylesheets { get; set; } = new List<StorageFile>();
-    public ICollection<StorageFile> Fonts { get; set; } = new List<StorageFile>();
-    public ICollection<StorageFile> Audios { get; set; } = new List<StorageFile>();
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StorageSubFile{TEditOptions}"/> class.
+    /// </summary>
+    /// <param name="originalDocumentName">Name of the original document.</param>
+    /// <param name="subCode">The sub code.</param>
+    public StorageSubFile(string originalDocumentName, string subCode)
+    {
+        OriginalDocumentName = originalDocumentName;
+        SubCode = subCode;
+    }
 
-    [JsonIgnore] public IEnumerable<StorageFile> AllResources => Images.Union(Stylesheets).Union(Fonts).Union(Audios);
+    public TEditOptions? EditOptions { get; set; }
+
+    public string SubCode { get; set; }
+
+    public bool IsEdited { get; set; }
+
+    public string OriginalDocumentName { get; set; }
+
+    public string EditedHtmlName => $"{Path.GetFileNameWithoutExtension(OriginalDocumentName)}.html";
+
+    public Guid DocumentCode { get; set; }
+
+    public Dictionary<string, StorageFile> Resources { get; set; } = new();
+
+    [JsonIgnore] public IEnumerable<StorageFile> Images => Resources.Values.Where(a => a.ResourceType == ResourceType.Image);
+
+    [JsonIgnore] public IEnumerable<StorageFile> Stylesheets => Resources.Values.Where(a => a.ResourceType == ResourceType.Stylesheet);
+
+    [JsonIgnore] public IEnumerable<StorageFile> Fonts => Resources.Values.Where(a => a.ResourceType == ResourceType.Font);
+
+    [JsonIgnore] public IEnumerable<StorageFile> Audios => Resources.Values.Where(a => a.ResourceType == ResourceType.Audio);
+
+    [JsonIgnore] public StorageFile ConvertedDocument => Resources.Values.Single(a => a.ResourceType == ResourceType.HtmlContent);
 }

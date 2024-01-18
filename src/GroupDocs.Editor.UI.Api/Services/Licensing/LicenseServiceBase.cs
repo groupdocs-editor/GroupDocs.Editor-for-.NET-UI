@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace GroupDocs.Editor.UI.Api.Services.Licensing;
 
-internal abstract class LicenseServiceBase<T> : ILicenseService where T : ILicenseService
+public abstract class LicenseServiceBase<T> : ILicenseService where T : ILicenseService
 {
     protected readonly ILogger<T> _logger;
     protected readonly LicenseOptions _options;
