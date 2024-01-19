@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import {
   PdfService,
-  StorageMetaFile,
-  WordProcessingService
+  WordProcessingService, WordProcessingStorageInfo
 } from "@groupdocs/groupdocs.editor.angular.ui-wordprocessing";
+import {PdfStorageInfo} from "@groupdocs/groupdocs.editor.angular.ui-wordprocessing/lib/api/models/pdf-storage-info";
 
 @Component({
   selector: 'app-upload-file',
@@ -31,14 +31,8 @@ export class UploadFileComponent {
       this.wordHttpService.uploadWordProcessingPost$Json({body:{
           File: this.file,
           "LoadOptions.Password": '',
-          "EditOptions.EnablePagination": true,
-          "EditOptions.EnableLanguageInformation": false,
-          "EditOptions.ExtractOnlyUsedFont": false,
-          "EditOptions.FontExtraction":0,
-          "EditOptions.UseInlineStyles": false
-
         }}).subscribe({
-        next: (data: StorageMetaFile) => {
+        next: (data: WordProcessingStorageInfo) => {
           if (data) {
             this.format = "wordProcessing";
             this.documentCode = data.documentCode;
@@ -62,9 +56,8 @@ export class UploadFileComponent {
       this.pdfService.uploadPdfPost$Json({body:{
           File: this.file,
           "LoadOptions.Password": '',
-          "EditOptions.EnablePagination": true,
         }}).subscribe({
-        next: (data: StorageMetaFile) => {
+        next: (data: PdfStorageInfo) => {
           if (data) {
             this.format = "pdf";
             this.documentCode = data.documentCode;
