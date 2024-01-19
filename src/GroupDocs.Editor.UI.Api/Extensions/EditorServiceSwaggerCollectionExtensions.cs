@@ -36,6 +36,7 @@ public static class EditorServiceSwaggerCollectionExtensions
                 });
                 opt.SwaggerDoc(EditorProductFamily.WordProcessing, GetInfo(EditorProductFamily.WordProcessing));
                 opt.SwaggerDoc(EditorProductFamily.LocalFile, GetInfo(EditorProductFamily.LocalFile));
+                opt.SwaggerDoc(EditorProductFamily.Presentation, GetInfo(EditorProductFamily.Presentation));
             });
         }
         else
@@ -53,6 +54,7 @@ public static class EditorServiceSwaggerCollectionExtensions
             });
             swaggerGenOptions.SwaggerDoc(EditorProductFamily.WordProcessing, GetInfo(EditorProductFamily.WordProcessing));
             swaggerGenOptions.SwaggerDoc(EditorProductFamily.LocalFile, GetInfo(EditorProductFamily.LocalFile));
+            swaggerGenOptions.SwaggerDoc(EditorProductFamily.Presentation, GetInfo(EditorProductFamily.Presentation));
             setupAction.Invoke(swaggerGenOptions);
             services.AddSwaggerGen(setupAction);
         }
@@ -92,6 +94,10 @@ public static class EditorServiceSwaggerCollectionExtensions
             if (featureManager.IsEnabledAsync(EditorProductFamily.LocalFile).Result)
             {
                 c.SwaggerEndpoint($"{EditorProductFamily.LocalFile}/swagger.json", $"{EditorProductFamily.LocalFile} API");
+            }
+            if (featureManager.IsEnabledAsync(EditorProductFamily.Presentation).Result)
+            {
+                c.SwaggerEndpoint($"{EditorProductFamily.Presentation}/swagger.json", $"{EditorProductFamily.Presentation} API");
             }
         });
         return app;

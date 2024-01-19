@@ -1,7 +1,5 @@
-﻿using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
-using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
+﻿using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
-using GroupDocs.Editor.UI.Api.Models.Storage.Requests;
 using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
@@ -24,70 +22,6 @@ public class LocalStorage : IStorage
         _logger = logger;
         _idGenerator = idGenerator;
         _options = options.Value;
-    }
-
-    /// <summary>
-    /// Uploads the original files and initializes a StorageMetaFile entity for tracking metadata.
-    /// </summary>
-    /// <param name="files">The original files to be uploaded.</param>
-    /// <returns>An instance of the <see cref="StorageMetaFile"/> entity for metadata initialization.</returns>
-    /// <exception cref="System.IO.FileLoadException"></exception>
-    public async Task<IEnumerable<StorageResponse<StorageMetaFile>>> UploadFiles(IEnumerable<UploadOriginalRequest> files)
-    {
-        var uploadOriginalRequests = files.ToList();
-        if (!uploadOriginalRequests.Any())
-        {
-            return new List<StorageResponse<StorageMetaFile>>
-            {
-                StorageResponse<StorageMetaFile>.CreateNotExist(new StorageMetaFile
-                {
-                    DocumentCode = _idGenerator.GenerateEmptyDocumentCode(),
-                    OriginalFile = new StorageFile
-                    {
-                        DocumentCode = _idGenerator.GenerateEmptyDocumentCode(),
-                        FileName = string.Empty
-                    }
-                })
-            };
-        }
-
-        var result = new List<StorageResponse<StorageMetaFile>>();
-        foreach (var file in uploadOriginalRequests)
-        {
-            try
-            {
-                var documentCode = _idGenerator.GenerateDocumentCode();
-                var storageFile = (await this.SaveFile(new[] { file.FileContent }, documentCode)).FirstOrDefault();
-                if (storageFile is not { IsSuccess: true })
-                {
-                    result.Add(StorageResponse<StorageMetaFile>.CreateFailed(new StorageMetaFile()));
-                    continue;
-                }
-                StorageMetaFile metaFile = new()
-                {
-                    DocumentInfo = file.DocumentInfo,
-                    DocumentCode = documentCode,
-                    OriginalFile = storageFile.Response ?? throw new FileLoadException()
-                };
-                result.Add(StorageResponse<StorageMetaFile>.CreateSuccess(metaFile));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed save file {FileName}", file.FileContent.FileName);
-                result.Add(StorageResponse<StorageMetaFile>.CreateFailed(new StorageMetaFile
-                {
-                    DocumentInfo = file.DocumentInfo,
-                    DocumentCode = Guid.Empty,
-                    OriginalFile = new StorageFile
-                    {
-                        DocumentCode = _idGenerator.GenerateEmptyDocumentCode(),
-                        FileName = file.FileContent.FileName
-                    }
-                }));
-            }
-        }
-
-        return result;
     }
 
     /// <summary>
@@ -117,7 +51,8 @@ public class LocalStorage : IStorage
             {
                 DocumentCode = documentCode,
                 FileLink = uriBuilder.Uri.ToString(),
-                FileName = fileContent.FileName
+                FileName = fileContent.FileName,
+                ResourceType = fileContent.ResourceType
             }));
         }
 
@@ -166,86 +101,5 @@ public class LocalStorage : IStorage
         }
         string fileText = await File.ReadAllTextAsync(file);
         return StorageResponse<string>.CreateSuccess(fileText);
-    }
-
-    public async Task<StorageResponse<StorageSubFile>> UpdateHtmlContent(StorageSubFile currentContent,
-        string htmlContents)
-    {
-        RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode.ToString(),
-            currentContent.EditedHtmlName));
-        using var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
-        await writer.WriteAsync(htmlContents);
-        await writer.FlushAsync();
-        stream.Seek(0, SeekOrigin.Begin);
-        var storageFile =
-            (await SaveFile(new[] { new FileContent { FileName = currentContent.EditedHtmlName, ResourceStream = stream } },
-                currentContent.DocumentCode, currentContent.SubCode.ToString())).FirstOrDefault();
-        if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
-        {
-            return StorageResponse<StorageSubFile>.CreateFailed(new StorageSubFile());
-        }
-        currentContent.IsEdited = true;
-        currentContent.SourceDocument = storageFile.Response;
-        return StorageResponse<StorageSubFile>.CreateSuccess(currentContent);
-    }
-
-    public async Task<StorageUpdateResourceResponse<StorageSubFile, StorageFile>> UpdateResource(StorageSubFile currentContent, UploadResourceRequest resource)
-    {
-        if (!string.IsNullOrWhiteSpace(resource.OldResorceName))
-        {
-            RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode.ToString(), resource.OldResorceName));
-            var resourceFile = currentContent.AllResources.FirstOrDefault(a => a.FileName.Equals(resource.OldResorceName));
-            if (resourceFile != null)
-            {
-                switch (resource.ResourceType)
-                {
-                    case ResourceType.Stylesheet:
-                        currentContent.Stylesheets.Remove(resourceFile);
-                        break;
-                    case ResourceType.Image:
-                        currentContent.Images.Remove(resourceFile);
-                        break;
-                    case ResourceType.Font:
-                        currentContent.Fonts.Remove(resourceFile);
-                        break;
-                    case ResourceType.Audio:
-                        currentContent.Audios.Remove(resourceFile);
-                        break;
-                    default:
-                        _logger.LogError("Resource with type: {type} is unknown", resource.ResourceType);
-                        throw new ArgumentOutOfRangeException($"Resource with type: {resource.ResourceType} is unknown");
-                }
-            }
-        }
-
-        await using var fileStream = resource.File.OpenReadStream();
-        var storageFile =
-            (await SaveFile(new[] { new FileContent { FileName = resource.File.FileName, ResourceStream = fileStream } },
-                currentContent.DocumentCode, currentContent.SubCode.ToString())).FirstOrDefault();
-        if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
-        {
-            return StorageUpdateResourceResponse<StorageSubFile, StorageFile>.CreateFailed(new StorageSubFile(), new StorageFile());
-        }
-        switch (resource.ResourceType)
-        {
-            case ResourceType.Stylesheet:
-                currentContent.Stylesheets.Add(storageFile.Response);
-                break;
-            case ResourceType.Image:
-                currentContent.Images.Add(storageFile.Response);
-                break;
-            case ResourceType.Font:
-                currentContent.Fonts.Add(storageFile.Response);
-                break;
-            case ResourceType.Audio:
-                currentContent.Audios.Add(storageFile.Response);
-                break;
-            default:
-                _logger.LogError("Resource with type: {type} is unknown", resource.ResourceType);
-                throw new ArgumentOutOfRangeException($"Resource with type: {resource.ResourceType} is unknown");
-        }
-
-        return StorageUpdateResourceResponse<StorageSubFile, StorageFile>.CreateSuccess(currentContent, storageFile.Response);
     }
 }

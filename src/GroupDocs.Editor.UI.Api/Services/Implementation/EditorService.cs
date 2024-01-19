@@ -4,31 +4,125 @@ using GroupDocs.Editor.HtmlCss.Resources;
 using GroupDocs.Editor.HtmlCss.Resources.Images.Vector;
 using GroupDocs.Editor.Metadata;
 using GroupDocs.Editor.Options;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
-using GroupDocs.Editor.UI.Api.Models.Storage.Requests;
+using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
 using Microsoft.Extensions.Logging;
 
 namespace GroupDocs.Editor.UI.Api.Services.Implementation;
 
-public class EditorService : IEditorService, IDisposable
+public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOptions, TEditOptions>
+    where TLoadOptions : ILoadOptions
+    where TEditOptions : IEditOptions
 {
-    private readonly ILogger<EditorService> _logger;
-    private readonly IMetaFileStorageCache _metaFileStorageCache;
+    private readonly ILogger<EditorService<TLoadOptions, TEditOptions>> _logger;
+    private readonly IMetaFileStorageCache<TLoadOptions, TEditOptions> _metaFileStorageCache;
     private readonly IStorage _storage;
     protected readonly IMapper _mapper;
     protected Editor? _editor;
     protected Stream? _originalFIleStream;
+    private readonly IIdGeneratorService _idGenerator;
 
-    public EditorService(IStorage storage, ILogger<EditorService> logger, IMetaFileStorageCache metaFileStorageCache, IMapper mapper)
+    public EditorService(
+        IStorage storage,
+        ILogger<EditorService<TLoadOptions, TEditOptions>> logger,
+        IMetaFileStorageCache<TLoadOptions, TEditOptions> metaFileStorageCache,
+        IMapper mapper,
+        IIdGeneratorService idGenerator)
     {
         _storage = storage;
         _logger = logger;
         _metaFileStorageCache = metaFileStorageCache;
         _mapper = mapper;
+        _idGenerator = idGenerator;
+    }
+
+    /// <summary>
+    /// Creates the new document by fomat.
+    /// </summary>
+    /// <param name="request">The request with file name and expected format.</param>
+    /// <returns></returns>
+    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> CreateDocument(CreateDocumentRequest request)
+    {
+        try
+        {
+            StorageMetaFile<TLoadOptions, TEditOptions>? metaFile = null;
+            using Editor editor = new(DocumentAction, request.Format);
+            if (metaFile == null) { return null; }
+            var info = editor.GetDocumentInfo(null);
+            metaFile.DocumentInfo = _mapper.Map<StorageDocumentInfo>(info);
+            await _metaFileStorageCache.UpdateFiles(metaFile);
+            return metaFile;
+
+            void DocumentAction(Stream stream)
+            {
+                var documentCode = _idGenerator.GenerateDocumentCode();
+                var originalFile = _storage.SaveFile(new List<FileContent>
+                {
+                    new()
+                    {
+                        FileName = request.FileName,
+                        ResourceStream = stream,
+                        ResourceType = ResourceType.OriginalDocument
+                    }
+                }, documentCode);
+                metaFile = new StorageMetaFile<TLoadOptions, TEditOptions>
+                {
+                    DocumentCode = documentCode,
+                    OriginalFile = originalFile.Result.FirstOrDefault()?.Response ?? throw new FileLoadException()
+                };
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Catch error while save file {fileName}", request.FileName);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Convert the document to HTML and save to storage.
+    /// </summary>
+    /// <param name="request">The request.</param>
+    /// <returns></returns>
+    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>> UploadDocument(UploadDocumentRequest request)
+    {
+        try
+        {
+            await using Stream documentStream = request.Stream;
+            using Editor editor = new(delegate { return documentStream; }, delegate { return request.LoadOptions; });
+            var documentCode = _idGenerator.GenerateDocumentCode();
+            var originalFile = await _storage.SaveFile(new List<FileContent>
+            {
+                new()
+                {
+                    FileName = request.FileName,
+                    ResourceStream = request.Stream,
+                    ResourceType = ResourceType.OriginalDocument
+                }
+            }, documentCode);
+            documentStream.Seek(0, SeekOrigin.Begin);
+            await documentStream.FlushAsync();
+            StorageMetaFile<TLoadOptions, TEditOptions> metaFile = new()
+            {
+                DocumentInfo =
+                    _mapper.Map<StorageDocumentInfo>(editor.GetDocumentInfo(request.LoadOptions?.Password ?? null)),
+                DocumentCode = documentCode,
+                OriginalFile = originalFile.FirstOrDefault()?.Response ?? throw new FileLoadException(),
+                OriginalLoadOptions = (TLoadOptions?)request.LoadOptions
+            };
+            await _metaFileStorageCache.UpdateFiles(metaFile);
+            return metaFile;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Catch error while save file {fileName}", request.FileName);
+            throw;
+        }
     }
 
     /// <summary>
@@ -37,123 +131,81 @@ public class EditorService : IEditorService, IDisposable
     /// <param name="stream">The stream.</param>
     /// <param name="loadOptions">The load options.</param>
     /// <returns></returns>
-    public IDocumentInfo GetDocumentInfo(Stream stream, ILoadOptions loadOptions)
+    public IDocumentInfo GetDocumentInfo(Stream stream, TLoadOptions loadOptions)
     {
-        CreateEditorIfNotExist(stream, loadOptions);
-        return _editor!.GetDocumentInfo(loadOptions?.Password ?? null);
-    }
-
-    public async Task<IDocumentInfo> GetDocumentInfo(StorageMetaFile meta, ILoadOptions loadOptions)
-    {
-        await CreateEditorIfNotExist(meta, loadOptions);
-        return _editor!.GetDocumentInfo(loadOptions.Password);
-    }
-
-    /// <summary>
-    /// Convert the document to HTML and save to storage.
-    /// </summary>
-    /// <param name="request">The request.</param>
-    /// <returns></returns>
-    public async Task<StorageMetaFile?> SaveDocument(SaveDocumentRequest request)
-    {
-        try
-        {
-            var response = (await _storage.UploadFiles(new List<UploadOriginalRequest>
-            {
-                new()
-                {
-                    DocumentInfo = _mapper.Map<StorageDocumentInfo>(GetDocumentInfo(request.Stream, request.LoadOptions)),
-                    FileContent = new FileContent {FileName = request.FileName, ResourceStream = request.Stream}
-                }
-            })).FirstOrDefault();
-            if (response is not { IsSuccess: true } || response.Response == null)
-            {
-                _logger.LogError("failed upload file {fileName}", request.FileName);
-                return null;
-            }
-
-            await ConvertToHtml(response.Response, request.EditOptions, request.LoadOptions);
-            return response.Response;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Catch error while save file {fileName}", request.FileName);
-            return null;
-        }
+        using Editor editor = new(delegate { return stream; }, delegate { return loadOptions; });
+        return editor.GetDocumentInfo(loadOptions.Password ?? null);
     }
 
     /// <summary>
     /// Converts the target document, retrieved from storage, to HTML.
     /// </summary>
-    /// <param name="documentCode">The document folder code.</param>
+    /// <param name="metaFile">code of the document.</param>
     /// <param name="editOptions">The edit options.</param>
     /// <param name="loadOptions">The load options.</param>
+    /// <exception cref="ArgumentNullException">in case when document's metafile is not exist or cannot download original file.</exception>
     /// <returns></returns>
-    public async Task<StorageMetaFile?> ConvertToHtml(Guid documentCode, IEditOptions editOptions, ILoadOptions loadOptions)
-    {
-        var meta = await _metaFileStorageCache.DownloadFile(documentCode);
-        if (meta == null)
-        {
-            return null;
-        }
-
-        return await ConvertToHtml(meta, editOptions, loadOptions);
-    }
-
-    /// <summary>
-    /// Converts the target document, retrieved from storage, to HTML.
-    /// </summary>
-    /// <param name="metaFile">The meta file.</param>
-    /// <param name="editOptions">The edit options.</param>
-    /// <param name="loadOptions">The load options.</param>
-    /// <returns></returns>
-    public async Task<StorageMetaFile> ConvertToHtml(StorageMetaFile metaFile, IEditOptions editOptions, ILoadOptions loadOptions)
+    public async Task<string?> ConvertToHtml(StorageMetaFile<TLoadOptions, TEditOptions> metaFile, TEditOptions? editOptions,
+        ILoadOptions? loadOptions)
     {
         try
         {
-            var subIndex = editOptions switch
+
+            string subIndex = editOptions switch
             {
-                PresentationEditOptions presentationEditOptions => presentationEditOptions.SlideNumber,
-                SpreadsheetEditOptions spreadsheetEdit => spreadsheetEdit.WorksheetIndex,
-                _ => 0
+                PresentationEditOptions presentationEditOptions => presentationEditOptions.SlideNumber.ToString(),
+                SpreadsheetEditOptions spreadsheetEdit => spreadsheetEdit.WorksheetIndex.ToString(),
+                _ => "0"
             };
-            var convertedFile = new StorageSubFile
-            {
-                SubCode = subIndex,
-                SourceDocumentName = metaFile.OriginalFile.FileName,
-                DocumentCode = metaFile.DocumentCode,
-            };
+            var convertedFile = new StorageSubFile<TEditOptions>(metaFile.OriginalFile.FileName, subIndex)
+            { DocumentCode = metaFile.DocumentCode, EditOptions = editOptions };
+            await _storage.RemoveFolder(Path.Combine(convertedFile.DocumentCode.ToString(), convertedFile.SubCode));
             HtmlSaveOptions saveOptions = new()
             {
                 EmbedStylesheetsIntoMarkup = false,
                 AttributeValueDelimiter = HtmlCss.Serialization.QuoteType.SingleQuote,
                 HtmlTagCase = HtmlCss.Serialization.TagRenderingCase.LowerCase,
-                SavingCallback = new StorageCallback(_storage, convertedFile)
+                SavingCallback = new StorageCallback<TEditOptions>(_storage, convertedFile)
             };
-
-            await CreateEditorIfNotExist(metaFile, loadOptions);
-            using EditableDocument doc = _editor!.Edit(editOptions);
-            await using Stream document = new MemoryStream();
-            await using (StreamWriter writer = new(document))
+            using var originalDocument =
+                await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+            if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
             {
-                doc.Save(writer, saveOptions);
-                await writer.FlushAsync();
-                var storageFile = (await _storage
-                    .SaveFile(new[] { new FileContent { FileName = convertedFile.EditedHtmlName, ResourceStream = writer.BaseStream } },
-                        metaFile.DocumentCode, convertedFile.SubCode.ToString())).FirstOrDefault();
-                if (storageFile is { IsSuccess: true, Response: not null })
-                {
-                    convertedFile.SourceDocument = storageFile.Response;
-                }
+                _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+                throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
             }
-
+            using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return loadOptions; });
+            using EditableDocument doc = editor.Edit(editOptions);
+            await using Stream document = new MemoryStream();
+            await using StreamWriter writer = new(document);
+            doc.Save(writer, saveOptions);
+            await writer.FlushAsync();
+            var storageFile = (await _storage
+                .SaveFile(
+                    new[]
+                    {
+                        new FileContent
+                        {
+                            FileName = convertedFile.EditedHtmlName,
+                            ResourceStream = writer.BaseStream,
+                            ResourceType = ResourceType.HtmlContent,
+                        }
+                    },
+                    metaFile.DocumentCode, convertedFile.SubCode)).FirstOrDefault();
+            if (storageFile is { IsSuccess: true, Response: not null })
+            {
+                convertedFile.Resources.Add(storageFile.Response.FileName, storageFile.Response);
+            }
             metaFile.StorageSubFiles.Add(subIndex, convertedFile);
             await _metaFileStorageCache.UpdateFiles(metaFile);
-            return metaFile;
+            await document.FlushAsync();
+            document.Seek(0, SeekOrigin.Begin);
+            using StreamReader reader = new(document);
+            return await reader.ReadToEndAsync();
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Failed to convert file {FileName}", metaFile.OriginalFile.FileName);
+            _logger.LogError(exception, "Failed to convert file with code: {documentCode}", metaFile.DocumentCode);
             throw;
         }
     }
@@ -162,9 +214,8 @@ public class EditorService : IEditorService, IDisposable
     /// Converts the target document, retrieved from storage, to preview images list.
     /// </summary>
     /// <param name="documentCode">The document folder code.</param>
-    /// <param name="loadOptions">The load options.</param>
     /// <returns></returns>
-    public async Task<StorageMetaFile?> ConvertPreviews(Guid documentCode, ILoadOptions loadOptions)
+    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> ConvertPreviews(Guid documentCode)
     {
         const string previewFolder = "preview";
         var metaFile = await _metaFileStorageCache.DownloadFile(documentCode);
@@ -172,8 +223,16 @@ public class EditorService : IEditorService, IDisposable
         {
             return null;
         }
+        using var originalDocument =
+            await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+        if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
+        {
+            _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+            throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
+        }
 
-        IDocumentInfo documentInfo = await GetDocumentInfo(metaFile, loadOptions);
+        using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
+        IDocumentInfo documentInfo = editor.GetDocumentInfo(metaFile.OriginalLoadOptions?.Password ?? null);
         for (int i = 0; i < documentInfo.PageCount; i++)
         {
             using SvgImage? svgPreview = GetPreview(documentInfo, i);
@@ -181,14 +240,17 @@ public class EditorService : IEditorService, IDisposable
             {
                 continue;
             }
-            using FileContent file = new();
-            file.FileName = $"{i}.svg";
-            file.ResourceStream = svgPreview.ByteContent;
+            using FileContent file = new()
+            {
+                FileName = $"{i}.svg",
+                ResourceStream = svgPreview.ByteContent,
+                ResourceType = ResourceType.Preview
+            };
             var preview =
                 (await _storage.SaveFile(new List<FileContent> { file }, documentCode, previewFolder)).FirstOrDefault();
             if (preview is { IsSuccess: true, Response: not null })
             {
-                metaFile.PreviewImages.Add(i, preview.Response);
+                metaFile.PreviewImages.Add(i.ToString(), preview.Response);
             }
         }
 
@@ -211,17 +273,25 @@ public class EditorService : IEditorService, IDisposable
 
         try
         {
-            await CreateEditorIfNotExist(metaFile, request.LoadOptions);
+            using var originalDocument =
+                await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+            if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
+            {
+                _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+                throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
+            }
+            using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
             using EditableDocument doc = metaFile.StorageSubFiles.Any(a => a.Value.IsEdited)
-                ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles[0])
-                : _editor!.Edit();
+                ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles["0"])
+                : editor.Edit();
             MemoryStream outputPdfStream = new();
-            _editor!.Save(doc, outputPdfStream, request.SaveOptions);
+            editor.Save(doc, outputPdfStream, request.SaveOptions);
             outputPdfStream.Seek(0, SeekOrigin.Begin);
             return new FileContent
             {
                 FileName = $"{Path.GetFileNameWithoutExtension(metaFile.OriginalFile.FileName)}.pdf",
-                ResourceStream = outputPdfStream
+                ResourceStream = outputPdfStream,
+                ResourceType = ResourceType.ConvertedDocument
             };
         }
         catch (Exception e)
@@ -244,14 +314,26 @@ public class EditorService : IEditorService, IDisposable
         {
             return null;
         }
-        await CreateEditorIfNotExist(metaFile, request.LoadOptions);
+        using var originalDocument =
+            await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+        if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
+        {
+            _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+            throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
+        }
+        using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
         using EditableDocument doc = metaFile.StorageSubFiles.Any(a => a.Value.IsEdited)
-            ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles[0])
-            : _editor!.Edit();
+            ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles["0"])
+            : editor.Edit();
         MemoryStream outputStream = new();
-        _editor!.Save(doc, outputStream, request.SaveOptions);
+        editor.Save(doc, outputStream, request.SaveOptions);
         outputStream.Seek(0, SeekOrigin.Begin);
-        return new FileContent { FileName = $"{Path.GetFileNameWithoutExtension(metaFile.OriginalFile.FileName)}.{request.Format}", ResourceStream = outputStream };
+        return new FileContent
+        {
+            FileName = $"{Path.GetFileNameWithoutExtension(metaFile.OriginalFile.FileName)}.{request.Format}",
+            ResourceStream = outputStream,
+            ResourceType = ResourceType.ConvertedDocument
+        };
     }
 
     public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : IDocumentFormat
@@ -270,6 +352,74 @@ public class EditorService : IEditorService, IDisposable
         }
         return WordProcessingFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
     }
+
+    public async Task<StorageResponse<StorageSubFile<TEditOptions>>> UpdateHtmlContent(StorageSubFile<TEditOptions> currentContent,
+        string htmlContents)
+    {
+        await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, currentContent.EditedHtmlName));
+        if (currentContent.Resources.ContainsKey(currentContent.EditedHtmlName))
+        {
+            currentContent.Resources.Remove(currentContent.EditedHtmlName);
+        }
+        using var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        await writer.WriteAsync(htmlContents);
+        await writer.FlushAsync();
+        stream.Seek(0, SeekOrigin.Begin);
+        var storageFile =
+            (await _storage.SaveFile(new[] { new FileContent { FileName = currentContent.EditedHtmlName, ResourceStream = stream, ResourceType = ResourceType.HtmlContent } },
+                currentContent.DocumentCode, currentContent.SubCode)).FirstOrDefault();
+        if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
+        {
+            return StorageResponse<StorageSubFile<TEditOptions>>.CreateFailed(new StorageSubFile<TEditOptions>(string.Empty, string.Empty));
+        }
+        currentContent.IsEdited = true;
+        currentContent.Resources.Add(storageFile.Response.FileName, storageFile.Response);
+        return StorageResponse<StorageSubFile<TEditOptions>>.CreateSuccess(currentContent);
+    }
+
+    public async Task<StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>> UpdateResource(StorageSubFile<TEditOptions> currentContent, UploadResourceRequest resource)
+    {
+        if (!string.IsNullOrWhiteSpace(resource.OldResorceName))
+        {
+            await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, resource.OldResorceName));
+            if (currentContent.Resources.ContainsKey(resource.OldResorceName))
+            {
+                currentContent.Resources.Remove(resource.OldResorceName);
+            }
+        }
+        ResourceType type;
+        switch (resource.ResourceType)
+        {
+            case ResourceType.Stylesheet:
+                type = ResourceType.Stylesheet;
+                break;
+            case ResourceType.Image:
+                type = ResourceType.Image;
+                break;
+            case ResourceType.Font:
+                type = ResourceType.Font;
+                break;
+            case ResourceType.Audio:
+                type = ResourceType.Audio;
+                break;
+            default:
+                _logger.LogError("Resource with type: {type} is unknown", resource.ResourceType);
+                throw new ArgumentOutOfRangeException($"Resource with type: {resource.ResourceType} is unknown");
+        }
+        await using var fileStream = resource.File.OpenReadStream();
+        var storageFile =
+            (await _storage.SaveFile(new[] { new FileContent { FileName = resource.File.FileName, ResourceStream = fileStream, ResourceType = type } },
+                currentContent.DocumentCode, currentContent.SubCode)).FirstOrDefault();
+        if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
+        {
+            return StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>.CreateFailed(new StorageSubFile<TEditOptions>(string.Empty, string.Empty), new StorageFile());
+        }
+        currentContent.Resources.Add(storageFile.Response.FileName, storageFile.Response);
+
+        return StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>.CreateSuccess(currentContent, storageFile.Response);
+    }
+
     public void Dispose()
     {
         Dispose(true);
@@ -278,11 +428,9 @@ public class EditorService : IEditorService, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing)
-        {
-            _editor?.Dispose();
-            _originalFIleStream?.Dispose();
-        }
+        if (!disposing) { return; }
+        _editor?.Dispose();
+        _originalFIleStream?.Dispose();
     }
 
     private static SvgImage? GetPreview(IDocumentInfo documentInfo, int pageIndex)
@@ -315,70 +463,45 @@ public class EditorService : IEditorService, IDisposable
         return null;
     }
 
-    private async Task<EditableDocument> EditableDocumentFromMarkup(StorageSubFile oneSubFile)
+    private async Task<EditableDocument> EditableDocumentFromMarkup(StorageSubFile<TEditOptions?> oneSubFile)
     {
-        var response =
-            await _storage.GetFileText(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode.ToString(),
-                oneSubFile.EditedHtmlName));
-        if (response is not { IsSuccess: true } || response.Response == null)
-        {
-            throw new ArgumentException("Cannot get a html file from storage", nameof(response.Response));
-        }
-
-        List<IHtmlResource> resources = new(oneSubFile.AllResources.Count());
-        foreach (var oneFile in oneSubFile.AllResources)
-        {
-            var stream = await _storage.DownloadFile(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode.ToString(), oneFile.FileName));
-
-            if (stream is not { IsSuccess: true } || stream.Response == null)
-            {
-                continue;
-            }
-            IHtmlResource parsedResource =
-                ResourceTypeDetector.TryDetectResource(stream.Response, oneFile.FileName, null);
-            if (parsedResource == null)
-            {
-                continue;
-            }
-
-            resources.Add(parsedResource);
-        }
-        return EditableDocument.FromMarkup(response.Response, resources);
-    }
-
-    private void CreateEditorIfNotExist(Stream stream, ILoadOptions? loadOptions)
-    {
-        if (loadOptions == null)
-        {
-            _editor ??= new Editor(delegate { return stream; });
-        }
-        else
-        {
-            _editor ??= new Editor(delegate { return stream; }, delegate { return loadOptions; });
-        }
-    }
-
-    private async Task CreateEditorIfNotExist(StorageMetaFile meta, ILoadOptions? loadOptions)
-    {
-        if (_editor == null)
+        try
         {
             var response =
-                await _storage.DownloadFile(Path.Combine(meta.DocumentCode.ToString(), meta.OriginalFile.FileName));
+                await _storage.GetFileText(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode,
+                    oneSubFile.EditedHtmlName));
             if (response is not { IsSuccess: true } || response.Response == null)
             {
-                _logger.LogError("Cannot download file {file}", meta.OriginalFile.FileName);
-                return;
+                throw new ArgumentException("Cannot get a html file from storage", nameof(response.Response));
             }
 
-            _originalFIleStream = response.Response;
-            if (loadOptions == null)
+            List<IHtmlResource> resources = new(oneSubFile.Resources.Count);
+            foreach (var oneFile in oneSubFile.Resources.Values)
             {
-                _editor ??= new Editor(delegate { return _originalFIleStream; });
+                var stream = await _storage.DownloadFile(Path.Combine(oneSubFile.DocumentCode.ToString(),
+                    oneSubFile.SubCode, oneFile.FileName));
+
+                if (stream is not { IsSuccess: true } || stream.Response == null)
+                {
+                    continue;
+                }
+
+                IHtmlResource parsedResource =
+                    ResourceTypeDetector.TryDetectResource(stream.Response, oneFile.FileName, null);
+                if (parsedResource == null)
+                {
+                    continue;
+                }
+
+                resources.Add(parsedResource);
             }
-            else
-            {
-                _editor = new Editor(delegate { return _originalFIleStream; }, delegate { return loadOptions; });
-            }
+
+            return EditableDocument.FromMarkup(response.Response, resources);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to generate EditableDocument from markup");
+            throw;
         }
     }
 }

@@ -23,13 +23,4 @@ public class WordProcessingUploadRequest
     /// </value>
     [Required]
     public WordProcessingLoadOptions LoadOptions { get; set; }
-
-    /// <summary>
-    /// Gets or sets the edit options.
-    /// </summary>
-    /// <value>
-    /// The edit options.
-    /// </value>
-    [Required]
-    public WordProcessingEditOptions EditOptions { get; set; }
 }

@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.SpaSamp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.ReactSpaSample", "samples\GroupDocs.Editor.UI.ReactSpaSample\GroupDocs.Editor.UI.ReactSpaSample.csproj", "{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.Presentation.SpaSample", "samples\GroupDocs.Editor.UI.Presentation.SpaSample\GroupDocs.Editor.UI.Presentation.SpaSample.csproj", "{33348B6B-8AA6-4018-BD81-42C423D5500E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,10 @@ Global
 		{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33348B6B-8AA6-4018-BD81-42C423D5500E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33348B6B-8AA6-4018-BD81-42C423D5500E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33348B6B-8AA6-4018-BD81-42C423D5500E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33348B6B-8AA6-4018-BD81-42C423D5500E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{DCC5DA8B-25AC-489E-870C-4393DBE2CDA0} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{A51986A0-4FDB-4D98-93AB-31047E4A637C} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F} = {C6A1FF7E-D061-4729-AB27-164452250290}
+		{33348B6B-8AA6-4018-BD81-42C423D5500E} = {C6A1FF7E-D061-4729-AB27-164452250290}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30886819-14E1-4F8A-9628-3E0A980CAD85}

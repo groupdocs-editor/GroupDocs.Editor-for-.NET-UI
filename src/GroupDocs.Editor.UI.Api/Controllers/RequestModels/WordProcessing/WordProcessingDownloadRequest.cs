@@ -28,15 +28,6 @@ public class WordProcessingDownloadRequest
     [FromQuery] public string Format { get; set; }
 
     /// <summary>
-    /// Gets or sets the load options.
-    /// </summary>
-    /// <value>
-    /// The load options.
-    /// </value>
-    [Required]
-    public WordProcessingLoadOptions LoadOptions { get; set; }
-
-    /// <summary>
     /// Gets or sets the save options.
     /// </summary>
     /// <value>

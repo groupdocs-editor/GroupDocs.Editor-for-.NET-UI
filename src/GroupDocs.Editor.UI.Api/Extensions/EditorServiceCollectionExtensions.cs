@@ -14,18 +14,21 @@ namespace GroupDocs.Editor.UI.Api.Extensions;
 public static class EditorServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds DI service required by the editor.
+    /// Adds a license service for the GroupDocs.Editor for .NET.
+    /// You can choose from available license services such as <see cref="Base64FileLicenseService"/>,
+    /// <see cref="RemoteUrlFileLicenseService"/>, or <see cref="LocalFileLicenseService"/> with the corresponding
+    /// <see cref="LicenseOptions"/> by specifying the <see cref="LicenseSourceType"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="services">The services.</param>
-    /// <param name="configuration">The configuration.</param>
-    /// <returns></returns>
-    public static IServiceCollection AddEditor<T>(
-        this IServiceCollection services, IConfiguration configuration) where T : IStorage
+    /// <typeparam name="T">The type of the license service. Choose from <see cref="Base64FileLicenseService"/>,
+    /// <see cref="RemoteUrlFileLicenseService"/>, or <see cref="LocalFileLicenseService"/>.</typeparam>
+    /// <param name="services">The services' collection.</param>
+    /// <param name="configuration">The configuration containing license options.</param>
+    /// <returns>The modified services collection.</returns>
+    public static IServiceCollection AddEditorLicense<T>(
+        this IServiceCollection services, IConfiguration configuration) where T : LicenseServiceBase<T>
     {
         services.Configure<LicenseOptions>(configuration.GetSection(nameof(LicenseOptions)));
-        services.AddHostedService<RemoteUrlFileLicenseService>();
-        return services.AddEditorTrial<T>(configuration);
+        return services.AddHostedService<T>();
     }
 
     /// <summary>
@@ -35,20 +38,23 @@ public static class EditorServiceCollectionExtensions
     /// <param name="services">The services.</param>
     /// <param name="configuration">The configuration.</param>
     /// <returns></returns>
-    public static IServiceCollection AddEditorTrial<T>(
+    public static IServiceCollection AddEditor<T>(
         this IServiceCollection services, IConfiguration configuration) where T : IStorage
     {
-        services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
-        services.AddScoped<IMetaFileStorageCache, MetaFileStorageCache>();
-        services.AddTransient<IEditorService, EditorService>();
+        services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
+        services.AddScoped<IPresentationStorageCache, PresentationStorageCache>();
+        services.AddTransient<IPresentationEditorService, PresentationEditorService>();
+        services.AddScoped<IPdfStorageCache, PdfStorageCache>();
+        services.AddTransient<IPdfEditorService, PdfEditorService>();
+        services.AddScoped<IWordProcessingStorageCache, WordProcessingStorageCache>();
+        services.AddTransient<IWordProcessingEditorService, WordProcessingEditorService>();
         services.AddScoped(typeof(IStorage), typeof(T));
         if (typeof(T) == typeof(AwsS3Storage))
         {
             services.Configure<AwsOptions>(configuration.GetSection("AWS"));
         }
-
         if (typeof(T) == typeof(LocalStorage))
         {
             services.Configure<LocalStorageOptions>(configuration.GetSection(nameof(LocalStorageOptions)));
@@ -66,12 +72,11 @@ public static class EditorServiceCollectionExtensions
     /// Adds the editor controllers with default JsonSerializerOptions.
     /// </summary>
     /// <param name="services">The services.</param>
-    /// <param name="configuration"></param>
     /// <param name="jsonOption">The json option.</param>
     /// <param name="mvcOption">The MVC option.</param>
     /// <returns></returns>
     public static IServiceCollection AddEditorControllers(
-        this IServiceCollection services, IConfiguration configuration, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
+        this IServiceCollection services, Action<JsonOptions>? jsonOption = null, Action<MvcOptions>? mvcOption = null)
     {
         IMvcBuilder mvcBuilder;
         services.AddFeatureManagement();
@@ -87,6 +92,7 @@ public static class EditorServiceCollectionExtensions
         else
         {
             MvcOptions options = new MvcOptions();
+            options.Conventions.Add(new ActionHidingConvention(featureManager));
             mvcOption.Invoke(options);
             mvcBuilder = services.AddControllers(mvcOption);
         }
@@ -96,6 +102,7 @@ public static class EditorServiceCollectionExtensions
             mvcBuilder.AddJsonOptions(option =>
             {
                 option.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
+                option.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
             });
         }
@@ -103,6 +110,7 @@ public static class EditorServiceCollectionExtensions
         {
             JsonOptions options = new();
             options.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
+            options.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
             jsonOption.Invoke(options);
             mvcBuilder.AddJsonOptions(jsonOption);
