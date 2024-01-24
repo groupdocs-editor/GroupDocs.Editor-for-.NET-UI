@@ -3,6 +3,7 @@ using GroupDocs.Editor.Formats;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 using GroupDocs.Editor.UI.Api.Models.Editor;
 
@@ -15,6 +16,7 @@ public class UploadProfile : Profile
         WordProcessing();
         Pdf();
         Presentation();
+        Spreadsheet();
     }
 
     public void WordProcessing()
@@ -66,5 +68,21 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newPptxDocument.{src.Format}" : src.FileName));
         CreateMap<PresentationDownloadRequest, DownloadDocumentRequest>();
+    }
+    public void Spreadsheet()
+    {
+        CreateMap<SpreadsheetUploadRequest, UploadDocumentRequest>()
+            .ForMember(dest => dest.Stream,
+                opt => opt.MapFrom(src => src.File.OpenReadStream()))
+            .ForMember(dest => dest.FileName,
+                opt => opt.MapFrom(src => src.File.FileName));
+        CreateMap<SpreadsheetNewDocumentRequest, CreateDocumentRequest>()
+            .ForMember(dest => dest.Format,
+                opt => opt.MapFrom(src =>
+                    SpreadsheetFormats.FromExtension(src.Format)))
+            .ForMember(dest => dest.FileName,
+                opt => opt.MapFrom(src =>
+                    string.IsNullOrWhiteSpace(src.FileName) ? $"newPptxDocument.{src.Format}" : src.FileName));
+        CreateMap<SpreadsheetDownloadRequest, DownloadDocumentRequest>();
     }
 }

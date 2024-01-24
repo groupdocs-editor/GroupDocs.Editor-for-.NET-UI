@@ -11,8 +11,27 @@ public class ResponseProfile : Profile
     {
         Presentation();
         WordProcessing();
+        Pdf();
+        Spreadsheet();
     }
 
+    public void Spreadsheet()
+    {
+        CreateMap<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>, SpreadsheetUploadResponse>()
+            .ForMember(dest => dest.OriginalLoadOptions,
+                opt => opt.MapFrom(src => new SpreadsheetLoadOptions
+                {
+                    Password = new string('*',
+                        src.OriginalLoadOptions == null ? 0 : src.OriginalLoadOptions.Password.Length)
+                }));
+        CreateMap<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>, SpreadsheetStorageInfo>()
+            .ForMember(dest => dest.OriginalLoadOptions,
+                opt => opt.MapFrom(src => new SpreadsheetLoadOptions
+                {
+                    Password = new string('*',
+                        src.OriginalLoadOptions == null ? 0 : src.OriginalLoadOptions.Password.Length)
+                }));
+    }
     public void Presentation()
     {
         CreateMap<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>, PresentationUploadResponse>()

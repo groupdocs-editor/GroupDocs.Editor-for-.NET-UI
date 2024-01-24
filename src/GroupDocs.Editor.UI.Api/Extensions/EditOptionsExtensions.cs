@@ -32,4 +32,11 @@ public static class EditOptionsExtensions
                target.Pages.Equals(editOptions.Pages) &&
                target.SkipImages == editOptions.SkipImages;
     }
+    public static bool IsOptionsEquals(this SpreadsheetEditOptions? target, SpreadsheetEditOptions? editOptions)
+    {
+        return (editOptions == null && target == null) ||
+               editOptions != null && target != null &&
+               target.WorksheetIndex == editOptions.WorksheetIndex &&
+               target.ExcludeHiddenWorksheets == editOptions.ExcludeHiddenWorksheets;
+    }
 }

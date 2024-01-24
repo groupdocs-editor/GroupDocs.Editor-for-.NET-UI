@@ -22,5 +22,9 @@ public class DocumentInfoProfile : Profile
             .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "Presentation"));
+        CreateMap<SpreadsheetDocumentInfo, StorageDocumentInfo>()
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.FamilyFormat,
+                opt => opt.MapFrom(src => "Spreadsheet"));
     }
 }
