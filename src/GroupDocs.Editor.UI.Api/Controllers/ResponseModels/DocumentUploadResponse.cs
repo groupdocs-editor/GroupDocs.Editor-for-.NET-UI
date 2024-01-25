@@ -31,7 +31,3 @@ public class DocumentUploadResponse<TLoadOptions> where TLoadOptions : ILoadOpti
     /// </value>
     public StorageDocumentInfo DocumentInfo { get; set; }
 }
-
-public class PresentationUploadResponse : DocumentUploadResponse<PresentationLoadOptions> { }
-public class PdfUploadResponse : DocumentUploadResponse<PdfLoadOptions> { }
-public class WordProcessingUploadResponse : DocumentUploadResponse<WordProcessingLoadOptions> { }

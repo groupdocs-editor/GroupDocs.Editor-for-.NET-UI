@@ -261,6 +261,67 @@
             The load options.
             </value>
         </member>
+        <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetDownloadRequest">
+            <summary>
+            Request for Downloads a specific document in the target format.
+            </summary>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetDownloadRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetDownloadRequest.Format">
+            <summary>
+            Gets or sets the format.
+            </summary>
+            <value>
+            The format.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetDownloadRequest.SaveOptions">
+            <summary>
+            Gets or sets the save options.
+            </summary>
+            <value>
+            The save options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetEditRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetEditRequest.EditOptions">
+            <summary>
+            Gets or sets the edit options.
+            </summary>
+            <value>
+            The edit options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetUploadRequest.File">
+            <summary>
+            Gets or sets the file.
+            </summary>
+            <value>
+            The file.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetUploadRequest.LoadOptions">
+            <summary>
+            Gets or sets the load options.
+            </summary>
+            <value>
+            The load options.
+            </value>
+        </member>
         <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequest">
             <summary>
             Request to updates the HTML content of a document based on its unique document code.
@@ -435,6 +496,57 @@
             <value>
             The document information.
             </value>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.CreateNewDocument(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetNewDocumentRequest)">
+            <summary>
+            allow to create new document
+            </summary>
+            <param name="file"></param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.Upload(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetUploadRequest)">
+            <summary>
+            This method uploads the specified document while converting it to HTML based on the provided input options.
+            </summary>
+            <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.Download(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet.SpreadsheetDownloadRequest)">
+            <summary>
+            Downloads a specific document in the target format. If the original document is available, it will be converted.
+            If there are edited versions, the latest one will be used for conversion.
+            </summary>
+            <param name="request">The request with specific document code, load and save option.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.Update(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequestPaged)">
+            <summary>
+            Updates the specified HTML content.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.UploadResource(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequestPaged)">
+            <summary>
+            Uploads the resource and allows replacing an existing one when specifying the OldResourceName.
+            </summary>
+            <param name="resource">The resource.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.Previews(System.Guid)">
+            <summary>
+            Get all previews document as the images.
+            </summary>
+            <param name="documentCode">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.SpreadsheetController.Stylesheets(System.Guid,System.Int32)">
+            <summary>
+            Get all stylesheets in the specified document.
+            </summary>
+            <param name="documentCode"></param>
+            <param name="slideNumber"></param>
+            <returns></returns>
         </member>
         <member name="M:GroupDocs.Editor.UI.Api.Controllers.WordProcessingController.Upload(GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingUploadRequest)">
             <summary>

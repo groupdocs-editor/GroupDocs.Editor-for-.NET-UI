@@ -27,6 +27,11 @@ public class FormatJsonConverter : JsonConverter<IDocumentFormat>
         {
             return PresentationFormats.FromExtension(reader.GetString());
         }
+        if (SpreadsheetFormats.All.Any(a =>
+                string.Equals(a.Extension, text, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return SpreadsheetFormats.FromExtension(reader.GetString());
+        }
         return WordProcessingFormats.Docx;
     }
 

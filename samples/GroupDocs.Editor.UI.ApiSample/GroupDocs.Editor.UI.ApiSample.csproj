@@ -9,11 +9,12 @@
 	<GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-	  <!--<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.2" />-->
-	  <PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.3" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="file2\" />
+	<Folder Include="file2\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GroupDocs.Editor.UI.Api\GroupDocs.Editor.UI.Api.csproj" />
   </ItemGroup>
 </Project>
