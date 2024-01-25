@@ -18,30 +18,30 @@ using System.Runtime.InteropServices;
 
 namespace GroupDocs.Editor.UI.Api.Test.Services.Implementation;
 
-public class EditorServicePresentationTests
+public class EditorServiceSpreadsheetTests
 {
     private readonly MockRepository _mockRepository;
 
     private readonly Mock<IStorage> _mockStorage;
-    private readonly Mock<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>> _mockMetaFileStorageCache;
+    private readonly Mock<IMetaFileStorageCache<SpreadsheetLoadOptions, SpreadsheetEditOptions>> _mockMetaFileStorageCache;
     private readonly Mock<IMapper> _mockMapper;
     private readonly Mock<IIdGeneratorService> _mockIdGeneratorService;
 
-    public EditorServicePresentationTests()
+    public EditorServiceSpreadsheetTests()
     {
         _mockRepository = new MockRepository(MockBehavior.Strict);
 
         _mockStorage = _mockRepository.Create<IStorage>();
-        _mockMetaFileStorageCache = _mockRepository.Create<IMetaFileStorageCache<PresentationLoadOptions, PresentationEditOptions>>();
+        _mockMetaFileStorageCache = _mockRepository.Create<IMetaFileStorageCache<SpreadsheetLoadOptions, SpreadsheetEditOptions>>();
         _mockMapper = _mockRepository.Create<IMapper>();
         _mockIdGeneratorService = _mockRepository.Create<IIdGeneratorService>();
     }
 
-    private EditorService<PresentationLoadOptions, PresentationEditOptions> CreateService()
+    private EditorService<SpreadsheetLoadOptions, SpreadsheetEditOptions> CreateService()
     {
-        return new EditorService<PresentationLoadOptions, PresentationEditOptions>(
+        return new EditorService<SpreadsheetLoadOptions, SpreadsheetEditOptions>(
             _mockStorage.Object,
-            new NullLogger<EditorService<PresentationLoadOptions, PresentationEditOptions>>(),
+            new NullLogger<EditorService<SpreadsheetLoadOptions, SpreadsheetEditOptions>>(),
             _mockMetaFileStorageCache.Object,
             _mockMapper.Object,
             _mockIdGeneratorService.Object);
@@ -59,23 +59,23 @@ public class EditorServicePresentationTests
         Guid documentCode = Guid.NewGuid();
         var docInfo = new StorageDocumentInfo
         {
-            Format = PresentationFormats.Pptx,
-            FamilyFormat = "Presentation",
+            Format = SpreadsheetFormats.Xlsx,
+            FamilyFormat = "Spreadsheet",
             IsEncrypted = false,
             PageCount = 1,
             Size = 1
         };
         StorageFile storageFile = new()
-        { DocumentCode = documentCode, FileName = "document.pptx", ResourceType = ResourceType.OriginalDocument };
+        { DocumentCode = documentCode, FileName = "document.Xlsx", ResourceType = ResourceType.OriginalDocument };
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        CreateDocumentRequest request = new() { FileName = "document.pptx", Format = PresentationFormats.Pptx };
+        CreateDocumentRequest request = new() { FileName = "document.Xlsx", Format = SpreadsheetFormats.Xlsx };
         _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), documentCode, ""))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
-                a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
-            .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
+                a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
+            .ReturnsAsync(new StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>());
         _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(documentCode);
-        _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<PresentationDocumentInfo>())).Returns(docInfo);
+        _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<SpreadsheetDocumentInfo>())).Returns(docInfo);
 
         // Act
         var result = await service.CreateDocument(request);
@@ -87,7 +87,7 @@ public class EditorServicePresentationTests
         result?.OriginalFile.Should().BeEquivalentTo(new StorageFile
         {
             DocumentCode = documentCode,
-            FileName = "document.pptx",
+            FileName = "document.Xlsx",
             ResourceType = ResourceType.OriginalDocument
         });
         result?.DocumentInfo.Should().NotBeNull();
@@ -101,26 +101,26 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
-        await using Stream stream = TestFile.Presentation.OpenFile();
+        await using Stream stream = TestFile.Spreadsheet.OpenFile();
         StorageFile storageFile = new()
-        { DocumentCode = documentCode, FileName = TestFile.Presentation.Name, ResourceType = ResourceType.OriginalDocument };
+        { DocumentCode = documentCode, FileName = TestFile.Spreadsheet.Name, ResourceType = ResourceType.OriginalDocument };
         var docInfo = new StorageDocumentInfo
         {
-            Format = PresentationFormats.Pptx,
-            FamilyFormat = "Presentation",
+            Format = SpreadsheetFormats.Xlsx,
+            FamilyFormat = "Spreadsheet",
             IsEncrypted = false,
             PageCount = 1,
             Size = 1
         };
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        UploadDocumentRequest request = new() { FileName = TestFile.Presentation.Name, Stream = stream };
-        _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<PresentationDocumentInfo>())).Returns(docInfo);
+        UploadDocumentRequest request = new() { FileName = TestFile.Spreadsheet.Name, Stream = stream };
+        _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<SpreadsheetDocumentInfo>())).Returns(docInfo);
         _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(documentCode);
         _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), documentCode, ""))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
-                a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
-            .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
+                a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
+            .ReturnsAsync(new StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>());
         // Act
         var result = await service.UploadDocument(request);
 
@@ -131,7 +131,7 @@ public class EditorServicePresentationTests
         result.OriginalFile.Should().BeEquivalentTo(new StorageFile
         {
             DocumentCode = documentCode,
-            FileName = TestFile.Presentation.Name,
+            FileName = TestFile.Spreadsheet.Name,
             ResourceType = ResourceType.OriginalDocument
         });
         result.DocumentInfo.Should().NotBeNull();
@@ -144,16 +144,16 @@ public class EditorServicePresentationTests
     {
         // Arrange
         var service = CreateService();
-        using Stream stream = TestFile.Presentation.OpenFile();
-        PresentationLoadOptions loadOptions = new();
+        using Stream stream = TestFile.Spreadsheet.OpenFile();
+        SpreadsheetLoadOptions loadOptions = new();
 
         // Act
         var result = service.GetDocumentInfo(stream, loadOptions);
 
         // Assert
         result.PageCount.Should().Be(1);
-        result.Size.Should().Be(35769);
-        result.Format.Should().Be(PresentationFormats.Pptx);
+        result.Size.Should().Be(8401);
+        result.Format.Should().Be(SpreadsheetFormats.Xlsx);
         result.IsEncrypted.Should().BeFalse();
         _mockRepository.VerifyAll();
     }
@@ -164,14 +164,14 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
-        await using Stream stream = TestFile.Presentation.OpenFile();
-        StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
+        await using Stream stream = TestFile.Spreadsheet.OpenFile();
+        StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> metaFile = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
             {
-                Format = PresentationFormats.Pptx,
-                FamilyFormat = "Presentation",
+                Format = SpreadsheetFormats.Xlsx,
+                FamilyFormat = "Spreadsheet",
                 IsEncrypted = false,
                 PageCount = 1,
                 Size = 1
@@ -179,47 +179,35 @@ public class EditorServicePresentationTests
             OriginalFile = new StorageFile
             {
                 DocumentCode = documentCode,
-                FileName = TestFile.Presentation.Name,
+                FileName = TestFile.Spreadsheet.Name,
                 ResourceType = ResourceType.OriginalDocument
             },
         };
-        PresentationEditOptions editOptions = new() { SlideNumber = 0 };
-        ILoadOptions loadOptions = new PresentationLoadOptions();
+        SpreadsheetEditOptions editOptions = new() { WorksheetIndex = 0 };
+        ILoadOptions loadOptions = new SpreadsheetLoadOptions();
         StorageFile storageFile = new()
         {
             DocumentCode = documentCode,
-            FileName = TestFile.Presentation.ChangeExtension("html"),
+            FileName = TestFile.Spreadsheet.ChangeExtension("html"),
             ResourceType = ResourceType.HtmlContent
         };
-        StorageFile storageStyle = new()
-        {
-            DocumentCode = documentCode,
-            FileName = "style.css",
-            ResourceType = ResourceType.HtmlContent
-        };
+
 
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        StorageResponse<StorageFile> styleStorageResponse = StorageResponse<StorageFile>.CreateSuccess(storageStyle);
         _mockStorage.Setup(a => a.RemoveFolder(Path.Combine(documentCode.ToString(), "0")))
             .ReturnsAsync(StorageResponse.CreateSuccess());
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Presentation.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
-        _mockStorage.Setup(a =>
-                a.SaveFile(
-                    It.Is<IEnumerable<FileContent>>(contents => contents.Any(ca =>
-                        ca.ResourceType == ResourceType.Stylesheet && ca.FileName.Equals("style.css"))),
-                    documentCode, "0"))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { styleStorageResponse });
 
         _mockStorage.Setup(a =>
                 a.SaveFile(
                     It.Is<IEnumerable<FileContent>>(contents => contents.Any(ca =>
-                        ca.ResourceType == ResourceType.HtmlContent && ca.FileName.Equals(TestFile.Presentation.ChangeExtension("html")))),
+                        ca.ResourceType == ResourceType.HtmlContent && ca.FileName.Equals(TestFile.Spreadsheet.ChangeExtension("html")))),
                     documentCode, "0"))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
-                a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
-            .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
+                a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
+            .ReturnsAsync(new StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>());
         // Act
         var result = await service.ConvertToHtml(metaFile, editOptions, loadOptions);
 
@@ -227,7 +215,6 @@ public class EditorServicePresentationTests
         var content = metaFile.StorageSubFiles["0"];
         content.Should().NotBeNull();
         content.Resources[storageFile.FileName].Should().Be(storageFile);
-        content.Resources[storageStyle.FileName].Should().Be(storageStyle);
         result.Should().NotBeNull();
         result?.Length.Should().BeGreaterThan(0);
         _mockRepository.VerifyAll();
@@ -243,14 +230,14 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
-        await using Stream stream = TestFile.Presentation.OpenFile();
-        StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
+        await using Stream stream = TestFile.Spreadsheet.OpenFile();
+        StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> metaFile = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
             {
-                Format = PresentationFormats.Pptx,
-                FamilyFormat = "Presentation",
+                Format = SpreadsheetFormats.Xlsx,
+                FamilyFormat = "Spreadsheet",
                 IsEncrypted = false,
                 PageCount = 1,
                 Size = 1
@@ -258,7 +245,7 @@ public class EditorServicePresentationTests
             OriginalFile = new StorageFile
             {
                 DocumentCode = documentCode,
-                FileName = TestFile.Presentation.Name,
+                FileName = TestFile.Spreadsheet.Name,
                 ResourceType = ResourceType.OriginalDocument
             },
         };
@@ -274,11 +261,11 @@ public class EditorServicePresentationTests
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
                     documentCode, "preview"))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Presentation.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         _mockMetaFileStorageCache.Setup(a =>
-                a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
-            .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
+                a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
+            .ReturnsAsync(new StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>());
 
         // Act
         var result = await service.ConvertPreviews(documentCode);
@@ -299,14 +286,14 @@ public class EditorServicePresentationTests
 
         PdfSaveOptions saveOptions = new PdfSaveOptions();
         DownloadPdfRequest request = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
-        await using Stream stream = TestFile.Presentation.OpenFile();
-        StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
+        await using Stream stream = TestFile.Spreadsheet.OpenFile();
+        StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> metaFile = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
             {
-                Format = PresentationFormats.Pptx,
-                FamilyFormat = "Presentation",
+                Format = SpreadsheetFormats.Xlsx,
+                FamilyFormat = "Spreadsheet",
                 IsEncrypted = false,
                 PageCount = 1,
                 Size = 1
@@ -314,12 +301,12 @@ public class EditorServicePresentationTests
             OriginalFile = new StorageFile
             {
                 DocumentCode = documentCode,
-                FileName = TestFile.Presentation.Name,
+                FileName = TestFile.Spreadsheet.Name,
                 ResourceType = ResourceType.OriginalDocument
             },
         };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(metaFile);
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Presentation.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
@@ -327,7 +314,7 @@ public class EditorServicePresentationTests
 
         // Assert
         result.Should().NotBeNull();
-        result?.FileName.Should().Be(TestFile.Presentation.ChangeExtension("pdf"));
+        result?.FileName.Should().Be(TestFile.Spreadsheet.ChangeExtension("pdf"));
         result?.ResourceStream.Length.Should().BeGreaterThan(0);
         result?.ResourceStream.CanRead.Should().BeTrue();
         result?.ResourceStream.Position.Should().Be(0);
@@ -345,16 +332,16 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
-        PresentationSaveOptions saveOptions = new(PresentationFormats.Ppt);
-        DownloadDocumentRequest request = new() { DocumentCode = documentCode, Format = "Ppt", SaveOptions = saveOptions };
-        await using Stream stream = TestFile.Presentation.OpenFile();
-        StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
+        SpreadsheetSaveOptions saveOptions = new(SpreadsheetFormats.Xls);
+        DownloadDocumentRequest request = new() { DocumentCode = documentCode, Format = "Xls", SaveOptions = saveOptions };
+        await using Stream stream = TestFile.Spreadsheet.OpenFile();
+        StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> metaFile = new()
         {
             DocumentCode = documentCode,
             DocumentInfo = new StorageDocumentInfo
             {
-                Format = PresentationFormats.Pptx,
-                FamilyFormat = "Presentation",
+                Format = SpreadsheetFormats.Xlsx,
+                FamilyFormat = "Spreadsheet",
                 IsEncrypted = false,
                 PageCount = 1,
                 Size = 1
@@ -362,12 +349,12 @@ public class EditorServicePresentationTests
             OriginalFile = new StorageFile
             {
                 DocumentCode = documentCode,
-                FileName = TestFile.Presentation.Name,
+                FileName = TestFile.Spreadsheet.Name,
                 ResourceType = ResourceType.OriginalDocument
             },
         };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(metaFile);
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Presentation.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
@@ -375,7 +362,7 @@ public class EditorServicePresentationTests
 
         // Assert
         result.Should().NotBeNull();
-        result?.FileName.Should().Be(TestFile.Presentation.ChangeExtension("Ppt"));
+        result?.FileName.Should().Be(TestFile.Spreadsheet.ChangeExtension("Xls"));
         result?.ResourceStream.Length.Should().BeGreaterThan(0);
         result?.ResourceStream.CanRead.Should().BeTrue();
         result?.ResourceStream.Position.Should().Be(0);
@@ -388,14 +375,14 @@ public class EditorServicePresentationTests
     {
         // Arrange
         var service = CreateService();
-        var expected = PresentationFormats.All.GroupBy(a => a.Extension).Select(a => a.First()).ToList();
+        var expected = SpreadsheetFormats.All.GroupBy(a => a.Extension).Select(a => a.First()).ToList();
         // Act
-        var result = service.GetSupportedFormats<PresentationFormats>();
+        var result = service.GetSupportedFormats<SpreadsheetFormats>();
 
         // Assert
-        var presentationFormats = result.ToList();
-        presentationFormats.Should().NotBeNull();
-        presentationFormats.Should().BeEquivalentTo(expected);
+        var spreadsheetFormats = result.ToList();
+        spreadsheetFormats.Should().NotBeNull();
+        spreadsheetFormats.Should().BeEquivalentTo(expected);
         _mockRepository.VerifyAll();
     }
 
@@ -405,17 +392,17 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
-        StorageSubFile<PresentationEditOptions> currentContent = new(TestFile.Presentation.Name, "0") { DocumentCode = documentCode };
+        StorageSubFile<SpreadsheetEditOptions> currentContent = new(TestFile.Spreadsheet.Name, "0") { DocumentCode = documentCode };
         const string htmlContents = "new content";
         StorageFile storageFile = new()
         {
             DocumentCode = documentCode,
-            FileName = TestFile.Presentation.ChangeExtension("html"),
+            FileName = TestFile.Spreadsheet.ChangeExtension("html"),
             ResourceType = ResourceType.HtmlContent
         };
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
         var filePath = Path.Combine(currentContent.DocumentCode.ToString(),
-            currentContent.SubCode, TestFile.Presentation.ChangeExtension("html"));
+            currentContent.SubCode, TestFile.Spreadsheet.ChangeExtension("html"));
         _mockStorage.Setup(a => a.RemoveFile(filePath)).ReturnsAsync(StorageResponse.CreateSuccess());
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
@@ -443,7 +430,7 @@ public class EditorServicePresentationTests
         await using var stream = new MemoryStream();
 
         IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
-        StorageSubFile<PresentationEditOptions> currentContent = new(TestFile.Presentation.Name, "0") { DocumentCode = documentCode };
+        StorageSubFile<SpreadsheetEditOptions> currentContent = new(TestFile.Spreadsheet.Name, "0") { DocumentCode = documentCode };
         UploadResourceRequest resource = new() { DocumentCode = documentCode, ResourceType = ResourceType.Stylesheet, File = formFile };
         StorageFile storageFile = new()
         {
