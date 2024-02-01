@@ -82,7 +82,7 @@ public class UploadProfile : Profile
                     SpreadsheetFormats.FromExtension(src.Format)))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
-                    string.IsNullOrWhiteSpace(src.FileName) ? $"newPptxDocument.{src.Format}" : src.FileName));
+                    string.IsNullOrWhiteSpace(src.FileName) ? $"newDocument.{src.Format}" : src.FileName));
         CreateMap<SpreadsheetDownloadRequest, DownloadDocumentRequest>();
     }
 }

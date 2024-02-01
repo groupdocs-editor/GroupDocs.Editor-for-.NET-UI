@@ -3,20 +3,17 @@
   <PropertyGroup>
 	<TargetFramework>net6.0</TargetFramework>
 	<Nullable>enable</Nullable>
-	<TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
-	<TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
-	  <UserSecretsId>c5w08a3e-3d57-4aea-9011-23006e64ac36</UserSecretsId>
 	<IsPackable>false</IsPackable>
+	  <UserSecretsId>c5308a3e-3d57-4aea-9011-23006e64ac36</UserSecretsId>
 	<SpaRoot>ClientApp\</SpaRoot>
-	<DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
-	<SpaProxyServerUrl>https://localhost:44453</SpaProxyServerUrl>
+	<SpaProxyServerUrl>https://localhost:44424</SpaProxyServerUrl>
 	<SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
 	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.7-stg-prev" />
-	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
+	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.7-stg-prev" />
+	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +23,11 @@
 	<None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
-  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+  <ItemGroup>
+	<Folder Include="file2\" />
+  </ItemGroup>
+
+	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 	<!-- Ensure Node.js is installed -->
 	<Exec Command="node --version" ContinueOnError="true">
 	  <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
@@ -39,11 +40,11 @@
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
 	<!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
 	<Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-	<Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+	<Exec WorkingDirectory="$(SpaRoot)" Command="npm run build -- --configuration production" />
 
 	<!-- Include the newly-built files in the publish output -->
 	<ItemGroup>
-	  <DistFiles Include="$(SpaRoot)build\**" />
+	  <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
 	  <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
 		<RelativePath>wwwroot\%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
 		<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
