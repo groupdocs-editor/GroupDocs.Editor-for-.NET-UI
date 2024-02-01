@@ -37,6 +37,7 @@ public static class EditorServiceSwaggerCollectionExtensions
                 opt.SwaggerDoc(EditorProductFamily.WordProcessing, GetInfo(EditorProductFamily.WordProcessing));
                 opt.SwaggerDoc(EditorProductFamily.LocalFile, GetInfo(EditorProductFamily.LocalFile));
                 opt.SwaggerDoc(EditorProductFamily.Presentation, GetInfo(EditorProductFamily.Presentation));
+                opt.SwaggerDoc(EditorProductFamily.Spreadsheet, GetInfo(EditorProductFamily.Spreadsheet));
             });
         }
         else
@@ -66,7 +67,7 @@ public static class EditorServiceSwaggerCollectionExtensions
     {
         return new OpenApiInfo
         {
-            Title = "GroupDocs.Editor.UI Api",
+            Title = $"{version} GroupDocs.Editor.UI Api",
             Version = version,
             Contact = new OpenApiContact
             { Url = new Uri("https://docs.groupdocs.com/editor/net/"), Name = "GroupDocs.Editor for .NET" },
@@ -98,6 +99,10 @@ public static class EditorServiceSwaggerCollectionExtensions
             if (featureManager.IsEnabledAsync(EditorProductFamily.Presentation).Result)
             {
                 c.SwaggerEndpoint($"{EditorProductFamily.Presentation}/swagger.json", $"{EditorProductFamily.Presentation} API");
+            }
+            if (featureManager.IsEnabledAsync(EditorProductFamily.Spreadsheet).Result)
+            {
+                c.SwaggerEndpoint($"{EditorProductFamily.Spreadsheet}/swagger.json", $"{EditorProductFamily.Spreadsheet} API");
             }
         });
         return app;

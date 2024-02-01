@@ -46,6 +46,8 @@ public static class EditorServiceCollectionExtensions
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
         services.AddScoped<IPresentationStorageCache, PresentationStorageCache>();
         services.AddTransient<IPresentationEditorService, PresentationEditorService>();
+        services.AddScoped<ISpreadsheetStorageCache, SpreadsheetStorageCache>();
+        services.AddTransient<ISpreadsheetEditorService, SpreadsheetEditorService>();
         services.AddScoped<IPdfStorageCache, PdfStorageCache>();
         services.AddTransient<IPdfEditorService, PdfEditorService>();
         services.AddScoped<IWordProcessingStorageCache, WordProcessingStorageCache>();
@@ -104,6 +106,7 @@ public static class EditorServiceCollectionExtensions
                 option.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
+                option.JsonSerializerOptions.Converters.Add(new SpreadsheetFormatJsonConverter());
             });
         }
         else
@@ -112,6 +115,7 @@ public static class EditorServiceCollectionExtensions
             options.JsonSerializerOptions.Converters.Add(new FormatJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
+            options.JsonSerializerOptions.Converters.Add(new SpreadsheetFormatJsonConverter());
             jsonOption.Invoke(options);
             mvcBuilder.AddJsonOptions(jsonOption);
         }

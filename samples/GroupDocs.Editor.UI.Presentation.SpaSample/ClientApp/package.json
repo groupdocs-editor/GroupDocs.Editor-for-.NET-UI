@@ -26,7 +26,7 @@
     "@angular/platform-server": "^14.2.0",
     "@angular/router": "^14.2.0",
     "@groupdocs/groupdocs.editor.angular.ui-core": "^0.1.3",
-    "@groupdocs/groupdocs.editor.angular.ui-presentation": "^0.0.3",
+    "@groupdocs/groupdocs.editor.angular.ui-presentation": "^0.0.6",
     "oidc-client": "^1.11.5",
     "popper.js": "^1.16.0",
     "run-script-os": "^1.1.6",

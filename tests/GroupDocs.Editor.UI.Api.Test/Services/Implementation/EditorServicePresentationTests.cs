@@ -126,16 +126,16 @@ public class EditorServicePresentationTests
 
         // Assert
         result.Should().NotBeNull();
-        result?.DocumentCode.Should().Be(documentCode);
-        result?.OriginalLoadOptions.Should().BeNull();
-        result?.OriginalFile.Should().BeEquivalentTo(new StorageFile
+        result.DocumentCode.Should().Be(documentCode);
+        result.OriginalLoadOptions.Should().BeNull();
+        result.OriginalFile.Should().BeEquivalentTo(new StorageFile
         {
             DocumentCode = documentCode,
             FileName = TestFile.Presentation.Name,
             ResourceType = ResourceType.OriginalDocument
         });
-        result?.DocumentInfo.Should().NotBeNull();
-        result?.DocumentInfo.Should().BeEquivalentTo(docInfo);
+        result.DocumentInfo.Should().NotBeNull();
+        result.DocumentInfo.Should().BeEquivalentTo(docInfo);
         _mockRepository.VerifyAll();
     }
 
@@ -145,7 +145,7 @@ public class EditorServicePresentationTests
         // Arrange
         var service = CreateService();
         using Stream stream = TestFile.Presentation.OpenFile();
-        PresentationLoadOptions loadOptions = new PresentationLoadOptions();
+        PresentationLoadOptions loadOptions = new();
 
         // Act
         var result = service.GetDocumentInfo(stream, loadOptions);
@@ -346,7 +346,7 @@ public class EditorServicePresentationTests
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
         PresentationSaveOptions saveOptions = new(PresentationFormats.Ppt);
-        DownloadDocumentRequest request = new() { DocumentCode = documentCode, Format = "rtf", SaveOptions = saveOptions };
+        DownloadDocumentRequest request = new() { DocumentCode = documentCode, Format = "Ppt", SaveOptions = saveOptions };
         await using Stream stream = TestFile.Presentation.OpenFile();
         StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
         {
@@ -375,7 +375,7 @@ public class EditorServicePresentationTests
 
         // Assert
         result.Should().NotBeNull();
-        result?.FileName.Should().Be(TestFile.Presentation.ChangeExtension("rtf"));
+        result?.FileName.Should().Be(TestFile.Presentation.ChangeExtension("Ppt"));
         result?.ResourceStream.Length.Should().BeGreaterThan(0);
         result?.ResourceStream.CanRead.Should().BeTrue();
         result?.ResourceStream.Position.Should().Be(0);

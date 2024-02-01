@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.3" />
+	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.7-stg-prev" />
 	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
   </ItemGroup>
 
@@ -21,6 +21,10 @@
 	<Content Remove="$(SpaRoot)**" />
 	<None Remove="$(SpaRoot)**" />
 	<None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="file2\" />
   </ItemGroup>
 
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
