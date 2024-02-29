@@ -32,6 +32,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.Present
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.Spreasdsheet.SpaSample", "samples\GroupDocs.Editor.UI.Spreasdsheet.SpaSample\GroupDocs.Editor.UI.Spreasdsheet.SpaSample.csproj", "{1B9F4715-F89B-4176-B7ED-01C138DFDC4D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4E9B7C39-F88C-4CDF-908A-BA1E62E7C25F}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
