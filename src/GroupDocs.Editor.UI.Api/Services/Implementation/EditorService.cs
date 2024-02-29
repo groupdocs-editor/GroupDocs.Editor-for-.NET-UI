@@ -463,7 +463,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         return null;
     }
 
-    private async Task<EditableDocument> EditableDocumentFromMarkup(StorageSubFile<TEditOptions?> oneSubFile)
+    private async Task<EditableDocument> EditableDocumentFromMarkup(StorageSubFile<TEditOptions> oneSubFile)
     {
         try
         {

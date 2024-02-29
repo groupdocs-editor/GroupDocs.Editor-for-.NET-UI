@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.4" />
-	<PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
+	  <PackageReference Include="GroupDocs.Editor.UI.Api" Version="6.0.4" />
+	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.25" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +26,6 @@
   <ItemGroup>
     <Folder Include="file2\" />
   </ItemGroup>
-
 	<Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
 	<!-- Ensure Node.js is installed -->
 	<Exec Command="node --version" ContinueOnError="true">

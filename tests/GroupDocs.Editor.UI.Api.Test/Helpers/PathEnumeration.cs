@@ -61,7 +61,5 @@ public abstract class PathEnumeration : IComparable
         return HashCode.Combine(Name, Parent);
     }
 
-    public int CompareTo(object other) => string.Compare(Name, ((PathEnumeration)other).Name, StringComparison.Ordinal);
-
-    // Other utility methods ...
+    public int CompareTo(object? other) => string.Compare(Name, (other as PathEnumeration)?.Name, StringComparison.Ordinal);
 }

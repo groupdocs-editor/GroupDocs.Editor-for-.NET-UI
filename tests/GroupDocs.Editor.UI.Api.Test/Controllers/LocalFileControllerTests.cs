@@ -50,9 +50,9 @@ public class LocalFileControllerTests
         result.Should().NotBeNull();
         var file = result as FileStreamResult;
         file.Should().NotBeNull();
-        file.FileStream.Should().BeSameAs(stream);
-        file.FileDownloadName.Should().Be(fileName);
-        file.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        file?.FileStream.Should().BeSameAs(stream);
+        file?.FileDownloadName.Should().Be(fileName);
+        file?.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         _mockRepository.VerifyAll();
     }
 
@@ -77,9 +77,9 @@ public class LocalFileControllerTests
         result.Should().NotBeNull();
         var file = result as FileStreamResult;
         file.Should().NotBeNull();
-        file.FileStream.Should().BeSameAs(stream);
-        file.FileDownloadName.Should().Be(fileName);
-        file.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        file?.FileStream.Should().BeSameAs(stream);
+        file?.FileDownloadName.Should().Be(fileName);
+        file?.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.presentationml.presentation");
         _mockRepository.VerifyAll();
     }
 
