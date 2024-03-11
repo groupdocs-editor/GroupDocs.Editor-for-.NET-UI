@@ -377,7 +377,7 @@ public class SpreadsheetControllerTests
         {
             DocumentCode = documentCode,
             File = formFile,
-            OldResorceName = "test.css",
+            OldResourceName = "test.css",
             SubIndex = "0",
             ResourceType = ResourceType.Stylesheet
         };

@@ -1,7 +1,9 @@
 using AutoMapper;
+using Azure;
 using GroupDocs.Editor.Formats;
+using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
-using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email;
 using GroupDocs.Editor.UI.Api.Controllers.ResponseModels;
 using GroupDocs.Editor.UI.Api.Extensions;
 using GroupDocs.Editor.UI.Api.Models.Editor;
@@ -12,27 +14,29 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement.Mvc;
+using System.Net.Mime;
+using System.Text;
 
 namespace GroupDocs.Editor.UI.Api.Controllers;
 
 [ApiController]
-[FeatureGate(EditorProductFamily.Spreadsheet)]
-[ApiExplorerSettings(GroupName = EditorProductFamily.Spreadsheet)]
+[FeatureGate(EditorProductFamily.Email)]
+[ApiExplorerSettings(GroupName = EditorProductFamily.Email)]
 [Route("[controller]")]
-public class SpreadsheetController : ControllerBase
+public class EmailController : ControllerBase
 {
-    private readonly ILogger<SpreadsheetController> _logger;
-    protected readonly ISpreadsheetEditorService _editorService;
+    private readonly ILogger<EmailController> _logger;
+    protected readonly IEmailEditorService _editorService;
     protected readonly IStorage _storage;
-    protected readonly ISpreadsheetStorageCache _storageCache;
+    protected readonly IEmailStorageCache _storageCache;
     protected readonly IMapper _mapper;
 
-    public SpreadsheetController(
-        ILogger<SpreadsheetController> logger,
-        ISpreadsheetEditorService editorService,
+    public EmailController(
+        ILogger<EmailController> logger,
+        IEmailEditorService editorService,
         IMapper mapper,
         IStorage storage,
-        ISpreadsheetStorageCache storageCache)
+        IEmailStorageCache storageCache)
     {
         _logger = logger;
         _editorService = editorService;
@@ -41,15 +45,37 @@ public class SpreadsheetController : ControllerBase
         _storageCache = storageCache;
     }
 
+
     /// <summary>
-    /// allow to create new document
+    /// This method uploads the specified document while converting it to HTML based on the provided input options.
     /// </summary>
-    /// <param name="file"></param>
+    /// <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
     /// <returns></returns>
-    [HttpPost("createNew")]
-    [ProducesResponseType(typeof(SpreadsheetUploadResponse), StatusCodes.Status200OK)]
+    [HttpPost("upload")]
+    [ProducesResponseType(typeof(EmailUploadResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateNewDocument(SpreadsheetNewDocumentRequest file)
+    public async Task<IActionResult> Upload([FromForm] EmailUploadRequest file)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState.ValidationState);
+        }
+
+        try
+        {
+            var document = await _editorService.UploadDocument(_mapper.Map<UploadDocumentRequest>(file));
+            return Ok(_mapper.Map<EmailUploadResponse>(document));
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e);
+        }
+    }
+
+    [HttpPost("createNew")]
+    [ProducesResponseType(typeof(EmailUploadResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> NewDocument(EmailNewDocumentRequest file)
     {
         if (!ModelState.IsValid)
         {
@@ -61,33 +87,14 @@ public class SpreadsheetController : ControllerBase
         {
             return BadRequest(ModelState.ValidationState);
         }
-        return Ok(_mapper.Map<SpreadsheetUploadResponse>(document));
-    }
-
-    /// <summary>
-    /// This method uploads the specified document while converting it to HTML based on the provided input options.
-    /// </summary>
-    /// <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
-    /// <returns></returns>
-    [HttpPost("upload")]
-    [ProducesResponseType(typeof(SpreadsheetUploadResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Upload([FromForm] SpreadsheetUploadRequest file)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ValidationState);
-        }
-
-        var document = await _editorService.UploadDocument(_mapper.Map<UploadDocumentRequest>(file));
-        return Ok(_mapper.Map<SpreadsheetUploadResponse>(document));
+        return Ok(_mapper.Map<EmailUploadResponse>(document));
     }
 
     [HttpPost("edit")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Edit([FromBody] SpreadsheetEditRequest request)
+    public async Task<IActionResult> Edit([FromBody] EmailEditRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -101,7 +108,7 @@ public class SpreadsheetController : ControllerBase
             return BadRequest("file not exist");
         }
 
-        if (meta.StorageSubFiles.TryGetValue(request.EditOptions?.WorksheetIndex.ToString() ?? "0", out var page))
+        if (meta.StorageSubFiles.TryGetValue("0", out var page))
         {
             if (request.EditOptions.IsOptionsEquals(page.EditOptions))
             {
@@ -113,12 +120,12 @@ public class SpreadsheetController : ControllerBase
                 return File(response.Response, "text/html", page.EditedHtmlName);
             }
 
-            meta.StorageSubFiles.Remove(request.EditOptions?.WorksheetIndex.ToString() ?? "0");
+            meta.StorageSubFiles.Remove("0");
             await _storageCache.UpdateFiles(meta);
         }
 
         var newContent = await _editorService.ConvertToHtml(meta, request.EditOptions, meta.OriginalLoadOptions);
-        meta.StorageSubFiles.TryGetValue(request.EditOptions?.WorksheetIndex.ToString() ?? "0", out var pageSaved);
+        meta.StorageSubFiles.TryGetValue("0", out var pageSaved);
         return File(newContent ?? Stream.Null, "text/html", pageSaved?.EditedHtmlName);
     }
 
@@ -132,7 +139,7 @@ public class SpreadsheetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Download(SpreadsheetDownloadRequest request)
+    public async Task<IActionResult> Download(EmailDownloadRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -159,7 +166,7 @@ public class SpreadsheetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> Update([FromBody] UpdateContentRequestPaged request)
+    public async Task<IActionResult> Update([FromBody] UpdateContentRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -171,7 +178,7 @@ public class SpreadsheetController : ControllerBase
         {
             return BadRequest("file not exist");
         }
-        var response = await _editorService.UpdateHtmlContent(meta.StorageSubFiles[request.SubIndex], request.HtmlContents);
+        var response = await _editorService.UpdateHtmlContent(meta.StorageSubFiles["0"], request.HtmlContents);
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return BadRequest(response.Status.ToString());
@@ -196,7 +203,7 @@ public class SpreadsheetController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(StorageFile), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UploadResource([FromForm] UploadResourceRequestPaged resource)
+    public async Task<IActionResult> UploadResource([FromForm] UploadResourceRequest resource)
     {
         if (!ModelState.IsValid)
         {
@@ -215,7 +222,7 @@ public class SpreadsheetController : ControllerBase
         }
 
         var response = await _editorService.UpdateResource(
-            meta.StorageSubFiles[resource.SubIndex], resource);
+            meta.StorageSubFiles["0"], resource);
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return BadRequest(response.Status.ToString());
@@ -232,64 +239,35 @@ public class SpreadsheetController : ControllerBase
     }
 
     /// <summary>
-    /// Get all previews document as the images.
-    /// </summary>
-    /// <param name="documentCode">The request.</param>
-    /// <returns></returns>
-    [HttpPost("previews/{documentCode:guid}")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(IDictionary<int, StorageFile>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Previews(Guid documentCode)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ValidationState);
-        }
-        var meta = await _storageCache.DownloadFile(documentCode);
-        if (meta == null)
-        {
-            return BadRequest("file not exist");
-        }
-
-        if (!meta.PreviewImages.Any())
-        {
-            meta = await _editorService.ConvertPreviews(documentCode);
-        }
-        return Ok(meta?.PreviewImages);
-    }
-
-    /// <summary>
     /// Get all stylesheets in the specified document.
     /// </summary>
     /// <param name="documentCode"></param>
-    /// <param name="slideNumber"></param>
     /// <returns></returns>
-    [HttpPost("stylesheets/{documentCode:guid}/{slideNumber}")]
+    [HttpPost("stylesheets/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(IEnumerable<StorageFile>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Stylesheets(Guid documentCode, int slideNumber)
+    public async Task<IActionResult> Stylesheets(Guid documentCode)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState.ValidationState);
         }
-        _logger.LogInformation("try to upload resource file {documentCode}", documentCode);
+        _logger.LogInformation("try to upload resource file {request}", documentCode);
         var meta = await _storageCache.DownloadFile(documentCode);
         if (meta == null)
         {
             return BadRequest("file not exist");
         }
 
-        var page = meta.StorageSubFiles[slideNumber.ToString()];
+        var page = meta.StorageSubFiles["0"];
         return Ok(page.Stylesheets);
     }
 
     [HttpGet("metaInfo/{documentCode:guid}")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(SpreadsheetStorageInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(EmailStorageInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> MetaInfo(Guid documentCode)
     {
         if (!ModelState.IsValid)
@@ -297,13 +275,18 @@ public class SpreadsheetController : ControllerBase
             return BadRequest(ModelState.ValidationState);
         }
 
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState.ValidationState);
+        }
+
         var meta = await _storageCache.DownloadFile(documentCode);
         if (meta == null)
         {
             return BadRequest("file not exist");
         }
 
-        return Ok(_mapper.Map<SpreadsheetStorageInfo>(meta));
+        return Ok(_mapper.Map<EmailStorageInfo>(meta));
     }
 
     [HttpGet("supportedFormats")]
@@ -312,7 +295,7 @@ public class SpreadsheetController : ControllerBase
     [ProducesResponseType(typeof(Dictionary<string, string>), StatusCodes.Status200OK)]
     public IActionResult SupportedFormats()
     {
-        Dictionary<string, string> result = _editorService.GetSupportedFormats<SpreadsheetFormats>()
+        Dictionary<string, string> result = _editorService.GetSupportedFormats<EmailFormats>()
             .ToDictionary(format => format.Extension, format => format.Name);
         return Ok(result);
     }

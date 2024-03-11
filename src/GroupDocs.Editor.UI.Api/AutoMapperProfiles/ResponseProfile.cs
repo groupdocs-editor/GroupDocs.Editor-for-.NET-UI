@@ -13,6 +13,7 @@ public class ResponseProfile : Profile
         WordProcessing();
         Pdf();
         Spreadsheet();
+        Email();
     }
 
     public void Spreadsheet()
@@ -90,5 +91,11 @@ public class ResponseProfile : Profile
                     Password = new string('*',
                         src.OriginalLoadOptions == null || string.IsNullOrWhiteSpace(src.OriginalLoadOptions.Password) ? 0 : src.OriginalLoadOptions.Password.Length)
                 }));
+    }
+
+    public void Email()
+    {
+        CreateMap<StorageMetaFile<ILoadOptions, EmailEditOptions>, EmailUploadResponse>();
+        CreateMap<StorageMetaFile<ILoadOptions, EmailEditOptions>, EmailStorageInfo>();
     }
 }

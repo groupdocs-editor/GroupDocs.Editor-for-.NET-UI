@@ -4,6 +4,42 @@
         <name>GroupDocs.Editor.UI.Api</name>
     </assembly>
     <members>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.EmailController.Upload(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailUploadRequest)">
+            <summary>
+            This method uploads the specified document while converting it to HTML based on the provided input options.
+            </summary>
+            <param name="file">The upload request. Also specify load and edit option for converting to Html document.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.EmailController.Download(GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailDownloadRequest)">
+            <summary>
+            Downloads a specific document in the target format. If the original document is available, it will be converted.
+            If there are edited versions, the latest one will be used for conversion.
+            </summary>
+            <param name="request">The request with specific document code, load and save option.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.EmailController.Update(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UpdateContentRequest)">
+            <summary>
+            Updates the specified HTML content.
+            </summary>
+            <param name="request">The request.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.EmailController.UploadResource(GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequest)">
+            <summary>
+            Uploads the resource and allows replacing an existing one when specifying the OldResourceName.
+            </summary>
+            <param name="resource">The resource.</param>
+            <returns></returns>
+        </member>
+        <member name="M:GroupDocs.Editor.UI.Api.Controllers.EmailController.Stylesheets(System.Guid)">
+            <summary>
+            Get all stylesheets in the specified document.
+            </summary>
+            <param name="documentCode"></param>
+            <returns></returns>
+        </member>
         <member name="M:GroupDocs.Editor.UI.Api.Controllers.LocalFileController.DownloadFromSubDocument(System.Guid,System.Int32,System.String)">
             <summary>
             This method is used to download a file from a subfolder within the storage. The target document is located in the specified subfolder.
@@ -129,6 +165,59 @@
             </summary>
             <value>
             The index of the sub.
+            </value>
+        </member>
+        <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailDownloadRequest">
+            <summary>
+            Request for Downloads a specific document in the target format.
+            </summary>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailDownloadRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailDownloadRequest.Format">
+            <summary>
+            Gets or sets the format.
+            </summary>
+            <value>
+            The format.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailDownloadRequest.SaveOptions">
+            <summary>
+            Gets or sets the save options.
+            </summary>
+            <value>
+            The save options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailEditRequest.DocumentCode">
+            <summary>
+            Gets or sets the document code.
+            </summary>
+            <value>
+            The document code.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailEditRequest.EditOptions">
+            <summary>
+            Gets or sets the edit options.
+            </summary>
+            <value>
+            The edit options.
+            </value>
+        </member>
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email.EmailUploadRequest.File">
+            <summary>
+            Gets or sets the file.
+            </summary>
+            <value>
+            The file.
             </value>
         </member>
         <member name="T:GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf.PdfDownloadRequest">
@@ -372,7 +461,7 @@
             The document code.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequest.OldResorceName">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.UploadResourceRequest.OldResourceName">
             <summary>
             Gets or sets the name of the resource that will be update. If value is <c>string.Empty</c> or <c>null</c> do nothing.
             </summary>
@@ -457,7 +546,7 @@
             The load options.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordToPdfDownloadRequest.DocumentCode">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingToPdfDownloadRequest.DocumentCode">
             <summary>
             Gets or sets the document code.
             </summary>
@@ -465,7 +554,7 @@
             The document code.
             </value>
         </member>
-        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordToPdfDownloadRequest.SaveOptions">
+        <member name="P:GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing.WordProcessingToPdfDownloadRequest.SaveOptions">
             <summary>
             Gets or sets the save options.
             </summary>

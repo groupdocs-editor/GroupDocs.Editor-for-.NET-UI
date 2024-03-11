@@ -33,7 +33,7 @@ public class UploadResourceRequest
     /// <value>
     /// The old name of the image.
     /// </value>
-    public string OldResorceName { get; set; }
+    public string? OldResourceName { get; set; }
 
     /// <summary>
     /// Gets or sets the type of the resource that try to update.

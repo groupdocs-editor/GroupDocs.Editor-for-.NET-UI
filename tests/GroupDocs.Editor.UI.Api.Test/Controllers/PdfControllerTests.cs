@@ -304,7 +304,7 @@ public class PdfControllerTests
         const string fileName = "new.css";
         await using var stream = new MemoryStream();
         IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
-        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResorceName = "test.css", ResourceType = ResourceType.Stylesheet };
+        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResourceName = "test.css", ResourceType = ResourceType.Stylesheet };
         PdfEditOptions editOptions = new()
         {
             EnablePagination = true

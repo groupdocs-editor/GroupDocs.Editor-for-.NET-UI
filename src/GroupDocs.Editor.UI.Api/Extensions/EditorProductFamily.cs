@@ -7,4 +7,5 @@ public static class EditorProductFamily
     public const string Presentation = "Presentation";
     public const string Spreadsheet = "Spreadsheet";
     public const string LocalFile = "LocalFile";
+    public const string Email = "Email";
 }

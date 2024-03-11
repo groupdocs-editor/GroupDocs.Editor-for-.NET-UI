@@ -292,7 +292,7 @@ public class WordProcessingControllerTests
         var wordProcessingController = CreateWordProcessingController();
         Guid documentCode = Guid.NewGuid();
         PdfSaveOptions saveOptions = new PdfSaveOptions();
-        WordToPdfDownloadRequest request = new WordToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
+        WordProcessingToPdfDownloadRequest request = new WordProcessingToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
         DownloadPdfRequest downloadPdfRequest = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         _mockMapper.Setup(a => a.Map<DownloadPdfRequest>(request)).Returns(downloadPdfRequest);
         using MemoryStream stream = new();
@@ -399,7 +399,7 @@ public class WordProcessingControllerTests
         const string fileName = "new.css";
         await using var stream = new MemoryStream();
         IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
-        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResorceName = "test.css", ResourceType = ResourceType.Stylesheet };
+        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResourceName = "test.css", ResourceType = ResourceType.Stylesheet };
         WordProcessingEditOptions editOptions = new()
         {
             EnablePagination = true
