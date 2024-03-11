@@ -163,7 +163,7 @@ public class SpreadsheetControllerTests
             WorksheetIndex = 0
         };
         SpreadsheetEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> storageMetaFile =
             new()
@@ -187,11 +187,11 @@ public class SpreadsheetControllerTests
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         _mockRepository.VerifyAll();
     }
 
@@ -206,7 +206,7 @@ public class SpreadsheetControllerTests
             WorksheetIndex = 0
         };
         SpreadsheetEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> storageMetaFile =
             new()
@@ -230,20 +230,20 @@ public class SpreadsheetControllerTests
                         }}
                 }
             };
-        StorageResponse<string> expectedFile = StorageResponse<string>.CreateSuccess(expectedHtml);
+        StorageDisposableResponse<Stream> expectedFile = StorageDisposableResponse<Stream>.CreateSuccess(expectedHtml);
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-        _mockStorage.Setup(a => a.GetFileText(Path.Combine(documentCode.ToString(), "0", "Spreadsheet.html")))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), "0", "Spreadsheet.html")))
             .ReturnsAsync(expectedFile);
         // Act
         var result = await controller.Edit(request);
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         _mockRepository.VerifyAll();
     }
 

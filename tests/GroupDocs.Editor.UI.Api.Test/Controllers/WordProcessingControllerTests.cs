@@ -168,7 +168,7 @@ public class WordProcessingControllerTests
         Guid documentCode = Guid.NewGuid();
         WordProcessingEditOptions editOptions = new(true);
         WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
             new()
@@ -193,11 +193,11 @@ public class WordProcessingControllerTests
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         mockRepository.VerifyAll();
     }
 
@@ -209,7 +209,7 @@ public class WordProcessingControllerTests
         Guid documentCode = Guid.NewGuid();
         WordProcessingEditOptions editOptions = new(true);
         WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
             new()
@@ -233,20 +233,20 @@ public class WordProcessingControllerTests
                     }}
                 }
             };
-        StorageResponse<string> expectedFile = StorageResponse<string>.CreateSuccess(expectedHtml);
+        StorageDisposableResponse<Stream> expectedFile = StorageDisposableResponse<Stream>.CreateSuccess(expectedHtml);
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-        _mockStorage.Setup(a => a.GetFileText(Path.Combine(documentCode.ToString(), "0", "fixed.html")))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), "0", "fixed.html")))
             .ReturnsAsync(expectedFile);
         // Act
         var result = await wordProcessingController.Edit(request);
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         mockRepository.VerifyAll();
     }
 
