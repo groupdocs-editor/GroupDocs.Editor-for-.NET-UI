@@ -1,6 +1,6 @@
 using AutoMapper;
 using GroupDocs.Editor.Formats;
-using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Pdf;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Presentation;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels.Spreadsheet;
@@ -17,6 +17,7 @@ public class UploadProfile : Profile
         Pdf();
         Presentation();
         Spreadsheet();
+        Email();
     }
 
     public void WordProcessing()
@@ -34,7 +35,7 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newDocxDocument.{src.Format}" : src.FileName));
         CreateMap<WordProcessingDownloadRequest, DownloadDocumentRequest>();
-        CreateMap<WordToPdfDownloadRequest, DownloadPdfRequest>();
+        CreateMap<WordProcessingToPdfDownloadRequest, DownloadPdfRequest>();
     }
 
     public void Pdf()
@@ -84,5 +85,22 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newDocument.{src.Format}" : src.FileName));
         CreateMap<SpreadsheetDownloadRequest, DownloadDocumentRequest>();
+    }
+
+    public void Email()
+    {
+        CreateMap<EmailUploadRequest, UploadDocumentRequest>()
+            .ForMember(dest => dest.Stream,
+                opt => opt.MapFrom(src => src.File.OpenReadStream()))
+            .ForMember(dest => dest.FileName,
+                opt => opt.MapFrom(src => src.File.FileName));
+        CreateMap<EmailNewDocumentRequest, CreateDocumentRequest>()
+            .ForMember(dest => dest.Format,
+                opt => opt.MapFrom(src =>
+                    EmailFormats.FromExtension(src.Format)))
+            .ForMember(dest => dest.FileName,
+                opt => opt.MapFrom(src =>
+                    string.IsNullOrWhiteSpace(src.FileName) ? $"newEmail.{src.Format}" : src.FileName));
+        CreateMap<EmailDownloadRequest, DownloadDocumentRequest>();
     }
 }

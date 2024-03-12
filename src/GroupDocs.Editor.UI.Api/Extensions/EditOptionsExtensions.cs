@@ -1,4 +1,5 @@
 ﻿using GroupDocs.Editor.Options;
+using Microsoft.Extensions.Azure;
 
 namespace GroupDocs.Editor.UI.Api.Extensions;
 
@@ -32,11 +33,19 @@ public static class EditOptionsExtensions
                target.Pages.Equals(editOptions.Pages) &&
                target.SkipImages == editOptions.SkipImages;
     }
+
     public static bool IsOptionsEquals(this SpreadsheetEditOptions? target, SpreadsheetEditOptions? editOptions)
     {
         return (editOptions == null && target == null) ||
                editOptions != null && target != null &&
                target.WorksheetIndex == editOptions.WorksheetIndex &&
                target.ExcludeHiddenWorksheets == editOptions.ExcludeHiddenWorksheets;
+    }
+
+    public static bool IsOptionsEquals(this EmailEditOptions? target, EmailEditOptions? editOptions)
+    {
+        return (editOptions == null && target == null) ||
+               editOptions != null && target != null &&
+               target.MailMessageOutput == editOptions.MailMessageOutput;
     }
 }

@@ -163,7 +163,7 @@ public class PresentationControllerTests
             SlideNumber = 0
         };
         PresentationEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> storageMetaFile =
             new()
@@ -187,11 +187,11 @@ public class PresentationControllerTests
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         _mockRepository.VerifyAll();
     }
 
@@ -206,7 +206,7 @@ public class PresentationControllerTests
             SlideNumber = 0
         };
         PresentationEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> storageMetaFile =
             new()
@@ -230,20 +230,20 @@ public class PresentationControllerTests
                         }}
                 }
             };
-        StorageResponse<string> expectedFile = StorageResponse<string>.CreateSuccess(expectedHtml);
+        StorageDisposableResponse<Stream> expectedFile = StorageDisposableResponse<Stream>.CreateSuccess(expectedHtml);
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-        _mockStorage.Setup(a => a.GetFileText(Path.Combine(documentCode.ToString(), "0", "presentation.html")))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), "0", "presentation.html")))
             .ReturnsAsync(expectedFile);
         // Act
         var result = await presentationController.Edit(request);
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         _mockRepository.VerifyAll();
     }
 
@@ -377,7 +377,7 @@ public class PresentationControllerTests
         {
             DocumentCode = documentCode,
             File = formFile,
-            OldResorceName = "test.css",
+            OldResourceName = "test.css",
             SubIndex = "0",
             ResourceType = ResourceType.Stylesheet
         };

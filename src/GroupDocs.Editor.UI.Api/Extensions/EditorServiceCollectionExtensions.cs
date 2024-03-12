@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
+using System;
 
 namespace GroupDocs.Editor.UI.Api.Extensions;
 
@@ -44,14 +45,33 @@ public static class EditorServiceCollectionExtensions
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
-        services.AddScoped<IPresentationStorageCache, PresentationStorageCache>();
-        services.AddTransient<IPresentationEditorService, PresentationEditorService>();
-        services.AddScoped<ISpreadsheetStorageCache, SpreadsheetStorageCache>();
-        services.AddTransient<ISpreadsheetEditorService, SpreadsheetEditorService>();
-        services.AddScoped<IPdfStorageCache, PdfStorageCache>();
-        services.AddTransient<IPdfEditorService, PdfEditorService>();
-        services.AddScoped<IWordProcessingStorageCache, WordProcessingStorageCache>();
-        services.AddTransient<IWordProcessingEditorService, WordProcessingEditorService>();
+        var featureManager = (IFeatureManager)services.BuildServiceProvider().GetService(typeof(IFeatureManager))!;
+        if (featureManager.IsEnabledAsync(EditorProductFamily.WordProcessing).Result)
+        {
+            services.AddScoped<IWordProcessingStorageCache, WordProcessingStorageCache>();
+            services.AddTransient<IWordProcessingEditorService, WordProcessingEditorService>();
+        }
+        if (featureManager.IsEnabledAsync(EditorProductFamily.Presentation).Result)
+        {
+            services.AddScoped<IPresentationStorageCache, PresentationStorageCache>();
+            services.AddTransient<IPresentationEditorService, PresentationEditorService>();
+        }
+        if (featureManager.IsEnabledAsync(EditorProductFamily.Spreadsheet).Result)
+        {
+            services.AddScoped<ISpreadsheetStorageCache, SpreadsheetStorageCache>();
+            services.AddTransient<ISpreadsheetEditorService, SpreadsheetEditorService>();
+        }
+        if (featureManager.IsEnabledAsync(EditorProductFamily.Pdf).Result)
+        {
+            services.AddScoped<IPdfStorageCache, PdfStorageCache>();
+            services.AddTransient<IPdfEditorService, PdfEditorService>();
+        }
+        if (featureManager.IsEnabledAsync(EditorProductFamily.Email).Result)
+        {
+            services.AddScoped<IEmailStorageCache, EmailStorageCache>();
+            services.AddTransient<IEmailEditorService, EmailEditorService>();
+        }
+
         services.AddScoped(typeof(IStorage), typeof(T));
         if (typeof(T) == typeof(AwsS3Storage))
         {
@@ -107,6 +127,7 @@ public static class EditorServiceCollectionExtensions
                 option.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
                 option.JsonSerializerOptions.Converters.Add(new SpreadsheetFormatJsonConverter());
+                option.JsonSerializerOptions.Converters.Add(new EmailFormatJsonConverter());
             });
         }
         else
@@ -116,6 +137,7 @@ public static class EditorServiceCollectionExtensions
             options.JsonSerializerOptions.Converters.Add(new PresentationFormatsJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new WordProcessingFormatJsonConverter());
             options.JsonSerializerOptions.Converters.Add(new SpreadsheetFormatJsonConverter());
+            options.JsonSerializerOptions.Converters.Add(new EmailFormatJsonConverter());
             jsonOption.Invoke(options);
             mvcBuilder.AddJsonOptions(jsonOption);
         }
