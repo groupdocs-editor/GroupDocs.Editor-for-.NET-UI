@@ -70,7 +70,7 @@ public class PdfController : ControllerBase
     [HttpPost("edit")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> Edit([FromBody] PdfEditRequest request)
     {
         if (!ModelState.IsValid)
@@ -89,12 +89,12 @@ public class PdfController : ControllerBase
         {
             if (request.EditOptions.IsOptionsEquals(page.EditOptions))
             {
-                var response = await _storage.GetFileText(Path.Combine(page.DocumentCode.ToString(), page.SubCode, page.EditedHtmlName));
+                var response = await _storage.DownloadFile(Path.Combine(page.DocumentCode.ToString(), page.SubCode, page.EditedHtmlName));
                 if (response is not { IsSuccess: true } || response.Response == null)
                 {
                     return BadRequest(response.Status.ToString());
                 }
-                return Ok(response.Response);
+                return File(response.Response, "text/html", page.EditedHtmlName);
             }
 
             meta.StorageSubFiles.Remove("0");
@@ -102,7 +102,8 @@ public class PdfController : ControllerBase
         }
 
         var newContent = await _editorService.ConvertToHtml(meta, request.EditOptions, meta.OriginalLoadOptions);
-        return Ok(newContent);
+        meta.StorageSubFiles.TryGetValue("0", out var pageSaved);
+        return File(newContent ?? Stream.Null, "text/html", pageSaved?.EditedHtmlName);
     }
 
     /// <summary>

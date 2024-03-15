@@ -145,7 +145,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// <param name="loadOptions">The load options.</param>
     /// <exception cref="ArgumentNullException">in case when document's metafile is not exist or cannot download original file.</exception>
     /// <returns></returns>
-    public async Task<string?> ConvertToHtml(StorageMetaFile<TLoadOptions, TEditOptions> metaFile, TEditOptions? editOptions,
+    public async Task<Stream?> ConvertToHtml(StorageMetaFile<TLoadOptions, TEditOptions> metaFile, TEditOptions? editOptions,
         ILoadOptions? loadOptions)
     {
         try
@@ -200,8 +200,11 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             await _metaFileStorageCache.UpdateFiles(metaFile);
             await document.FlushAsync();
             document.Seek(0, SeekOrigin.Begin);
-            using StreamReader reader = new(document);
-            return await reader.ReadToEndAsync();
+            Stream result = new MemoryStream();
+            await document.CopyToAsync(result);
+            await result.FlushAsync();
+            result.Seek(0, SeekOrigin.Begin);
+            return result;
         }
         catch (Exception exception)
         {
@@ -350,6 +353,10 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         {
             return SpreadsheetFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
         }
+        if (typeof(TFormat) == typeof(EmailFormats))
+        {
+            return EmailFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
+        }
         return WordProcessingFormats.All.Cast<TFormat>().GroupBy(a => a.Extension).Select(a => a.First());
     }
 
@@ -380,12 +387,12 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
 
     public async Task<StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>> UpdateResource(StorageSubFile<TEditOptions> currentContent, UploadResourceRequest resource)
     {
-        if (!string.IsNullOrWhiteSpace(resource.OldResorceName))
+        if (!string.IsNullOrWhiteSpace(resource.OldResourceName))
         {
-            await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, resource.OldResorceName));
-            if (currentContent.Resources.ContainsKey(resource.OldResorceName))
+            await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, resource.OldResourceName));
+            if (currentContent.Resources.ContainsKey(resource.OldResourceName))
             {
-                currentContent.Resources.Remove(resource.OldResorceName);
+                currentContent.Resources.Remove(resource.OldResourceName);
             }
         }
         ResourceType type;

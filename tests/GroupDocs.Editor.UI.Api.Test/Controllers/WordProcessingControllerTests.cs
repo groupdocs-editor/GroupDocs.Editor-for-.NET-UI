@@ -168,7 +168,7 @@ public class WordProcessingControllerTests
         Guid documentCode = Guid.NewGuid();
         WordProcessingEditOptions editOptions = new(true);
         WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
             new()
@@ -193,11 +193,11 @@ public class WordProcessingControllerTests
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         mockRepository.VerifyAll();
     }
 
@@ -209,7 +209,7 @@ public class WordProcessingControllerTests
         Guid documentCode = Guid.NewGuid();
         WordProcessingEditOptions editOptions = new(true);
         WordProcessingEditRequest request = new() { DocumentCode = documentCode, EditOptions = editOptions };
-        const string expectedHtml = "test html";
+        using var expectedHtml = new MemoryStream();
 
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> storageMetaFile =
             new()
@@ -233,20 +233,20 @@ public class WordProcessingControllerTests
                     }}
                 }
             };
-        StorageResponse<string> expectedFile = StorageResponse<string>.CreateSuccess(expectedHtml);
+        StorageDisposableResponse<Stream> expectedFile = StorageDisposableResponse<Stream>.CreateSuccess(expectedHtml);
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-        _mockStorage.Setup(a => a.GetFileText(Path.Combine(documentCode.ToString(), "0", "fixed.html")))
+        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), "0", "fixed.html")))
             .ReturnsAsync(expectedFile);
         // Act
         var result = await wordProcessingController.Edit(request);
 
         // Assert
         result.Should().NotBeNull();
-        var okObjectResult = result as OkObjectResult;
+        var okObjectResult = result as FileStreamResult;
         okObjectResult.Should().NotBeNull();
-        var responseDocument = okObjectResult?.Value as string;
+        var responseDocument = okObjectResult?.FileStream;
         responseDocument.Should().NotBeNull();
-        responseDocument.Should().Be(expectedHtml);
+        responseDocument.Should().BeSameAs(expectedHtml);
         mockRepository.VerifyAll();
     }
 
@@ -292,7 +292,7 @@ public class WordProcessingControllerTests
         var wordProcessingController = CreateWordProcessingController();
         Guid documentCode = Guid.NewGuid();
         PdfSaveOptions saveOptions = new PdfSaveOptions();
-        WordToPdfDownloadRequest request = new WordToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
+        WordProcessingToPdfDownloadRequest request = new WordProcessingToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
         DownloadPdfRequest downloadPdfRequest = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         _mockMapper.Setup(a => a.Map<DownloadPdfRequest>(request)).Returns(downloadPdfRequest);
         using MemoryStream stream = new();
@@ -399,7 +399,7 @@ public class WordProcessingControllerTests
         const string fileName = "new.css";
         await using var stream = new MemoryStream();
         IFormFile formFile = new FormFile(stream, 0, stream.Length, "id_from_form", fileName);
-        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResorceName = "test.css", ResourceType = ResourceType.Stylesheet };
+        UploadResourceRequest resource = new() { DocumentCode = documentCode, File = formFile, OldResourceName = "test.css", ResourceType = ResourceType.Stylesheet };
         WordProcessingEditOptions editOptions = new()
         {
             EnablePagination = true

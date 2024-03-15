@@ -12,7 +12,7 @@ public class DocumentInfoProfile : Profile
         CreateMap<WordProcessingDocumentInfo, StorageDocumentInfo>()
             .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
             .ForMember(dest => dest.FamilyFormat,
-            opt => opt.MapFrom(src => "WordProcessing"));
+                opt => opt.MapFrom(src => "WordProcessing"));
         CreateMap<FixedLayoutDocumentInfo, StorageDocumentInfo>()
             .ForMember(dest => dest.Format,
                 opt => opt.MapFrom(src => FixedLayoutFormats.FromExtension(src.Format.Extension)))
@@ -26,5 +26,9 @@ public class DocumentInfoProfile : Profile
             .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "Spreadsheet"));
+        CreateMap<EmailDocumentInfo, StorageDocumentInfo>()
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.FamilyFormat,
+                opt => opt.MapFrom(src => "Email"));
     }
 }

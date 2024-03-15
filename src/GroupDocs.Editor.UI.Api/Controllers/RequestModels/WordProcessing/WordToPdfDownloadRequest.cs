@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels;
+namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
 
-public class WordToPdfDownloadRequest
+public class WordProcessingToPdfDownloadRequest
 {
     /// <summary>
     /// Gets or sets the document code.

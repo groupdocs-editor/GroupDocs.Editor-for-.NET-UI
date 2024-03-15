@@ -32,6 +32,11 @@ public class FormatJsonConverter : JsonConverter<IDocumentFormat>
         {
             return SpreadsheetFormats.FromExtension(reader.GetString());
         }
+        if (EmailFormats.All.Any(a =>
+                string.Equals(a.Extension, text, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return EmailFormats.FromExtension(reader.GetString());
+        }
         return WordProcessingFormats.Docx;
     }
 
