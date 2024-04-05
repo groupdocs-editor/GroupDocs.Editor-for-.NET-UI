@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
@@ -13,27 +14,26 @@ public class LocalStorageTests : IDisposable
 {
     private readonly MockRepository _mockRepository;
     private readonly IOptions<LocalStorageOptions> _mockOptions;
-    private readonly Mock<IIdGeneratorService> _mockIdGeneratorService;
+    private readonly Guid _documentCode;
 
     public LocalStorageTests()
     {
         _mockRepository = new MockRepository(MockBehavior.Strict);
+        _documentCode = Guid.NewGuid();
         LocalStorageOptions opt = new()
         {
             BaseUrl = @"https://localhost:7240/LocalFile/download/",
             RootFolder = "files",
         };
         _mockOptions = Microsoft.Extensions.Options.Options.Create(opt);
-        _mockIdGeneratorService = _mockRepository.Create<IIdGeneratorService>();
     }
 
     private LocalStorage CreateLocalStorage()
     {
-        Directory.CreateDirectory("files");
+        Directory.CreateDirectory(Path.Combine("files", _documentCode.ToString()));
         return new LocalStorage(
             new NullLogger<LocalStorage>(),
-            _mockOptions,
-            _mockIdGeneratorService.Object);
+            _mockOptions);
     }
 
     [Fact]
@@ -49,14 +49,13 @@ public class LocalStorageTests : IDisposable
         };
 
         IEnumerable<FileContent> fileContents = new List<FileContent> { file };
-        Guid documentCode = Guid.NewGuid();
 
         // Act
-        var result = await localStorage.SaveFile(fileContents, documentCode);
+        var result = await localStorage.SaveFile(fileContents, PathBuilder.New(_documentCode));
 
         // Assert
         result.Should().HaveCount(1);
-        File.Exists(Path.Combine(_mockOptions.Value.RootFolder, documentCode.ToString(), "test.docx")).Should().BeTrue();
+        File.Exists(Path.Combine(_mockOptions.Value.RootFolder, _documentCode.ToString(), "test.docx")).Should().BeTrue();
         _mockRepository.VerifyAll();
     }
 
@@ -65,11 +64,11 @@ public class LocalStorageTests : IDisposable
     {
         // Arrange
         var localStorage = CreateLocalStorage();
-        Directory.CreateDirectory(Path.Combine("files", "toDelete"));
+        Directory.CreateDirectory(Path.Combine("files", _documentCode.ToString(), "toDelete"));
         const string folderSubPath = "toDelete";
 
         // Act
-        var result = await localStorage.RemoveFolder(folderSubPath);
+        var result = await localStorage.RemoveFolder(PathBuilder.New(_documentCode, new []{folderSubPath}));
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);
@@ -82,11 +81,12 @@ public class LocalStorageTests : IDisposable
     {
         // Arrange
         var localStorage = CreateLocalStorage();
-        var path = Path.Combine("files", "toDelete.txt");
+
+        var path = Path.Combine("files", _documentCode.ToString(), "toDelete.txt");
         await File.WriteAllTextAsync(path, "test");
 
         // Act
-        var result = await localStorage.RemoveFile("toDelete.txt");
+        var result = await localStorage.RemoveFile(PathBuilder.New(_documentCode, new[] { "toDelete.txt" }));
 
         // Assert
         result.Status.Should().Be(StorageActionStatus.Success);
@@ -99,11 +99,11 @@ public class LocalStorageTests : IDisposable
     {
         // Arrange
         var localStorage = CreateLocalStorage();
-        var path = Path.Combine("files", "toDelete.txt");
+        var path = Path.Combine("files", _documentCode.ToString(), "toDelete.txt");
         await File.WriteAllTextAsync(path, "test");
 
         // Act
-        using var result = await localStorage.DownloadFile("toDelete.txt");
+        using var result = await localStorage.DownloadFile(PathBuilder.New(_documentCode, new[] { "toDelete.txt" }));
 
         // Assert
         result.Should().NotBeNull();
@@ -117,11 +117,11 @@ public class LocalStorageTests : IDisposable
     {
         // Arrange
         var localStorage = CreateLocalStorage();
-        var path = Path.Combine("files", "toDelete.txt");
+        var path = Path.Combine("files", _documentCode.ToString(), "toDelete.txt");
         await File.WriteAllTextAsync(path, "test");
 
         // Act
-        var response = await localStorage.GetFileText("toDelete.txt");
+        var response = await localStorage.GetFileText(PathBuilder.New(_documentCode, new[] { "toDelete.txt" }));
 
         // Assert
         response.Status.Should().Be(StorageActionStatus.Success);

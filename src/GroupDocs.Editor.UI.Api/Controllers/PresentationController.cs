@@ -105,7 +105,7 @@ public class PresentationController : ControllerBase
         {
             if (request.EditOptions.IsOptionsEquals(page.EditOptions))
             {
-                var response = await _storage.DownloadFile(Path.Combine(page.DocumentCode.ToString(), page.SubCode, page.EditedHtmlName));
+                var response = await _storage.DownloadFile(PathBuilder.New(page.DocumentCode, new[] { page.SubCode, page.EditedHtmlName }));
                 if (response is not { IsSuccess: true } || response.Response == null)
                 {
                     return BadRequest(response.Status.ToString());

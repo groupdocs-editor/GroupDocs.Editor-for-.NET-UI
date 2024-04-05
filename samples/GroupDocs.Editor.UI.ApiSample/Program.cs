@@ -10,7 +10,7 @@ builder.Services.AddEditorControllers();
 builder.Services.AddEditorSwagger();
 // uncomment for set license
 builder.Services.AddEditorLicense<Base64FileLicenseService>(builder.Configuration);
-builder.Services.AddEditor<LocalStorage>(builder.Configuration);
+builder.Services.AddEditor<AwsS3Storage>(builder.Configuration);
 builder.Services.AddCors(p => p.AddPolicy("corsApp", policy =>
 {
     policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();

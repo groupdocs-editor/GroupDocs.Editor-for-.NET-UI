@@ -1,4 +1,5 @@
 using GroupDocs.Editor.UI.Api.Extensions;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +48,7 @@ public class LocalFileController : ControllerBase
         }
 
         _logger.LogInformation("try to download file: {fileName} for page {page}, document: {documentCode}", fileName, subDocumentIndex, documentCode);
-        var response = await _storage.DownloadFile(Path.Combine(documentCode.ToString(), subDocumentIndex.ToString(), HttpUtility.UrlDecode(fileName)));
+        var response = await _storage.DownloadFile(PathBuilder.New(documentCode, new[] { subDocumentIndex.ToString(), HttpUtility.UrlDecode(fileName) }));
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return BadRequest(response.Status.ToString());
@@ -73,7 +74,7 @@ public class LocalFileController : ControllerBase
             return BadRequest(ModelState.ValidationState);
         }
         _logger.LogInformation("try to download file: {fileName} from document: {documentCode}", fileName, documentCode);
-        var response = await _storage.DownloadFile(Path.Combine(documentCode.ToString(), HttpUtility.UrlDecode(fileName)));
+        var response = await _storage.DownloadFile(PathBuilder.New(documentCode, new[] { HttpUtility.UrlDecode(fileName) }));
 
         if (response is not { IsSuccess: true } || response.Response == null)
         {
@@ -95,7 +96,7 @@ public class LocalFileController : ControllerBase
         }
 
         _logger.LogInformation("try to download file: {fileName} for page {page}, document: {documentCode}", fileName, subFolder, documentCode);
-        var response = await _storage.DownloadFile(Path.Combine(documentCode.ToString(), subFolder, HttpUtility.UrlDecode(fileName)));
+        var response = await _storage.DownloadFile(PathBuilder.New(documentCode, new[] { subFolder, HttpUtility.UrlDecode(fileName) }));
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return BadRequest(response.Status.ToString());

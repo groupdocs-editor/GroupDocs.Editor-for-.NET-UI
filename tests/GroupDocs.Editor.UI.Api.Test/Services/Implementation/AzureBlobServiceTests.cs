@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Options;
@@ -35,8 +36,8 @@ public class AzureBlobServiceTests
     [Fact]
     public async void OnlyDownloadExistingFile()
     {
-        const string filename = "WordProcessing.docx";
-        using StorageDisposableResponse<Stream> downloaded = await _storage.DownloadFile(filename);
+        using StorageDisposableResponse<Stream> downloaded =
+            await _storage.DownloadFile(PathBuilder.New(Guid.NewGuid(), new[] {"WordProcessing.docx"}));
         downloaded.Should().NotBeNull();
         downloaded.Status.Should().BeOneOf(StorageActionStatus.Success, StorageActionStatus.NotExist);
         if (downloaded.Status != StorageActionStatus.Success) return;
@@ -50,8 +51,8 @@ public class AzureBlobServiceTests
     [Fact]
     public async Task OnlyDeleteExistingFile()
     {
-        const string filename = "WordProcessing.docx";
-        StorageResponse deletedStatus = await _storage.RemoveFile(filename);
+        StorageResponse deletedStatus =
+            await _storage.RemoveFile(PathBuilder.New(Guid.NewGuid(), new[] {"WordProcessing.docx"}));
         deletedStatus.Should().NotBeNull();
         deletedStatus.Status.Should().BeOneOf(StorageActionStatus.Success, StorageActionStatus.NotExist);
     }

@@ -69,7 +69,7 @@ public class EditorServiceSpreadsheetTests
         { DocumentCode = documentCode, FileName = "document.Xlsx", ResourceType = ResourceType.OriginalDocument };
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
         CreateDocumentRequest request = new() { FileName = "document.Xlsx", Format = SpreadsheetFormats.Xlsx };
-        _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), documentCode, ""))
+        _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
@@ -116,7 +116,7 @@ public class EditorServiceSpreadsheetTests
         UploadDocumentRequest request = new() { FileName = TestFile.Spreadsheet.Name, Stream = stream };
         _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<SpreadsheetDocumentInfo>())).Returns(docInfo);
         _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(documentCode);
-        _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), documentCode, ""))
+        _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
@@ -194,16 +194,16 @@ public class EditorServiceSpreadsheetTests
 
 
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        _mockStorage.Setup(a => a.RemoveFolder(Path.Combine(documentCode.ToString(), "0")))
+        _mockStorage.Setup(a => a.RemoveFolder(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageResponse.CreateSuccess());
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         _mockStorage.Setup(a =>
                 a.SaveFile(
                     It.Is<IEnumerable<FileContent>>(contents => contents.Any(ca =>
                         ca.ResourceType == ResourceType.HtmlContent && ca.FileName.Equals(TestFile.Spreadsheet.ChangeExtension("html")))),
-                    documentCode, "0"))
+                    It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
@@ -259,9 +259,9 @@ public class EditorServiceSpreadsheetTests
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(metaFile);
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
-                    documentCode, "preview"))
+                    It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions>>()))
@@ -306,7 +306,7 @@ public class EditorServiceSpreadsheetTests
             },
         };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(metaFile);
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
@@ -354,7 +354,7 @@ public class EditorServiceSpreadsheetTests
             },
         };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(metaFile);
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), TestFile.Spreadsheet.Name)))
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
@@ -401,12 +401,12 @@ public class EditorServiceSpreadsheetTests
             ResourceType = ResourceType.HtmlContent
         };
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
-        var filePath = Path.Combine(currentContent.DocumentCode.ToString(),
-            currentContent.SubCode, TestFile.Spreadsheet.ChangeExtension("html"));
-        _mockStorage.Setup(a => a.RemoveFile(filePath)).ReturnsAsync(StorageResponse.CreateSuccess());
+        _mockStorage
+            .Setup(a => a.RemoveFile(It.IsAny<PathBuilder>()))
+            .ReturnsAsync(StorageResponse.CreateSuccess());
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
-                    documentCode, "0"))
+                    It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         // Act
         var result = await service.UpdateHtmlContent(currentContent, htmlContents);
@@ -441,7 +441,7 @@ public class EditorServiceSpreadsheetTests
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
-                    documentCode, "0"))
+                    It.IsAny<PathBuilder>()))
             .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
         // Act
         var result = await service.UpdateResource(currentContent, resource);

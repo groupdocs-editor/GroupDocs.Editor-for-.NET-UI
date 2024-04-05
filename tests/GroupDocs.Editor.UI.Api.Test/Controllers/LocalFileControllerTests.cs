@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using System.Web;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 
 namespace GroupDocs.Editor.UI.Api.Test.Controllers;
 
@@ -38,8 +39,9 @@ public class LocalFileControllerTests
         const int subDocumentIndex = 0;
         const string fileName = "WordProcessing.docx";
         await using var stream = new MemoryStream();
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), subDocumentIndex.ToString(),
-            HttpUtility.UrlDecode(fileName)))).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
+        _mockStorage
+            .Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
+            .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         // Act
         var result = await localFileController.DownloadFromSubDocument(
             documentCode,
@@ -65,8 +67,9 @@ public class LocalFileControllerTests
         const int subDocumentIndex = 0;
         const string fileName = "Presentation.pptx";
         await using var stream = new MemoryStream();
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), subDocumentIndex.ToString(),
-            HttpUtility.UrlDecode(fileName)))).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
+        _mockStorage
+            .Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
+            .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         // Act
         var result = await localFileController.DownloadFromSubDocument(
             documentCode,
@@ -91,8 +94,7 @@ public class LocalFileControllerTests
         Guid documentCode = Guid.NewGuid();
         const string fileName = "WordProcessing.docx";
         await using var stream = new MemoryStream();
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(),
-            HttpUtility.UrlDecode(fileName)))).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>())).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
         var result = await localFileController.Download(

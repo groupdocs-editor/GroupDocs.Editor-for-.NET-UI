@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Implementation;
 using GroupDocs.Editor.UI.Api.Services.Options;
@@ -33,12 +34,12 @@ public class AwsS3ServiceTests : IDisposable
     [Fact]
     public async Task RemoveNotExisting()
     {
-        StorageResponse deletionNotExistantFolderResult = await _storage.RemoveFolder("Abcde_notExists");
+        StorageResponse deletionNotExistantFolderResult = await _storage.RemoveFolder(PathBuilder.New(Guid.NewGuid(),new []{ "Abcde_notExists" }));
         deletionNotExistantFolderResult.Should().NotBeNull();
         deletionNotExistantFolderResult.IsSuccess.Should().BeFalse();
         deletionNotExistantFolderResult.Status.Should().Be(StorageActionStatus.NotExist);
 
-        StorageResponse detetionNotExistantFileResult = await _storage.RemoveFile("Abcd_NotExistantFile");
+        StorageResponse detetionNotExistantFileResult = await _storage.RemoveFile(PathBuilder.New(Guid.NewGuid(), new[] { "Abcd_NotExistantFile" }));
         detetionNotExistantFileResult.Should().NotBeNull();
         detetionNotExistantFileResult.IsSuccess.Should().BeFalse();
         detetionNotExistantFileResult.Status.Should().Be(StorageActionStatus.NotExist);
@@ -47,8 +48,7 @@ public class AwsS3ServiceTests : IDisposable
     [Fact]
     public async void DownloadNotExistantFile()
     {
-        const string filename = "Abcdef_NotExistantFilename";
-        using StorageDisposableResponse<Stream> downloaded = await _storage.DownloadFile(filename);
+        using StorageDisposableResponse<Stream> downloaded = await _storage.DownloadFile(PathBuilder.New(Guid.NewGuid(), new[] { "Abcdef_NotExistantFilename" }));
         downloaded.Should().NotBeNull();
         downloaded.IsSuccess.Should().BeFalse();
         downloaded.Status.Should().Be(StorageActionStatus.NotExist);

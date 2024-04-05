@@ -36,8 +36,17 @@ internal sealed class StorageCallback<TEditOptions> : IHtmlSavingCallback where 
             _ => ResourceType.Image
         };
         var response = _storage
-            .SaveFile(new[] { new FileContent { FileName = resource.FilenameWithExtension, ResourceStream = resource.ByteContent, ResourceType = type } },
-                _metaFile.DocumentCode, _metaFile.SubCode).Result.FirstOrDefault();
+            .SaveFile(
+                new[]
+                {
+                    new FileContent
+                    {
+                        FileName = resource.FilenameWithExtension,
+                        ResourceStream = resource.ByteContent,
+                        ResourceType = type
+                    }
+                },
+                PathBuilder.New(_metaFile.DocumentCode, new[] {_metaFile.SubCode})).Result.FirstOrDefault();
         if (response is not { IsSuccess: true } || response.Response == null)
         {
             return string.Empty;

@@ -28,13 +28,13 @@ public class AzureBlobStorage : IStorage
         _logger = logger;
     }
 
-    public async Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, Guid documentCode, string subIndex = "")
+    public async Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, PathBuilder prefixPath)
     {
         List<StorageResponse<StorageFile>> totalResult = new();
 
         foreach (FileContent one in fileContents)
         {
-            var azureFileName = BuildUrlName(new[] { documentCode.ToString(), subIndex, one.FileName });
+            var azureFileName = prefixPath.ToAzurePath();
             BlobClient blob = _client.GetBlobClient(azureFileName);
             Azure.Response<BlobContentInfo> result;
             try
@@ -48,7 +48,7 @@ public class AzureBlobStorage : IStorage
                 {
                     StorageResponse<StorageFile> oneResultFinal = StorageResponse<StorageFile>.CreateSuccess(new StorageFile
                     {
-                        DocumentCode = documentCode,
+                        DocumentCode = prefixPath.DocumentCode,
                         FileLink = azureFileName,
                         FileName = one.FileName
                     });
@@ -63,7 +63,7 @@ public class AzureBlobStorage : IStorage
             {
                 StorageResponse<StorageFile> oneResultFinal = StorageResponse<StorageFile>.CreateSuccess(new StorageFile
                 {
-                    DocumentCode = documentCode,
+                    DocumentCode = prefixPath.DocumentCode,
                     FileLink = GetFileLink(blob, azureFileName),
                     FileName = one.FileName
                 });
@@ -77,11 +77,10 @@ public class AzureBlobStorage : IStorage
         return totalResult;
     }
 
-    public async Task<StorageResponse> RemoveFolder(string folderSubPath)
+    public async Task<StorageResponse> RemoveFolder(PathBuilder path)
     {
-        if (string.IsNullOrWhiteSpace(folderSubPath)) { return StorageResponse.CreateFailed(); }
 
-        Azure.Pageable<BlobItem> blobItems = _client.GetBlobs(prefix: folderSubPath);
+        Azure.Pageable<BlobItem> blobItems = _client.GetBlobs(prefix: path.ToAzurePath());
         int deletedCounter = 0;
         foreach (BlobItem blobItem in blobItems)
         {
@@ -92,16 +91,16 @@ public class AzureBlobStorage : IStorage
         return deletedCounter == 0 ? StorageResponse.CreateNotExist() : StorageResponse.CreateSuccess();
     }
 
-    public async Task<StorageResponse> RemoveFile(string fileSubPath)
+    public async Task<StorageResponse> RemoveFile(PathBuilder path)
     {
-        BlobClient blob = _client.GetBlobClient(fileSubPath);
+        BlobClient blob = _client.GetBlobClient(path.ToAzurePath());
         Azure.Response<bool> result = await blob.DeleteIfExistsAsync();
         return result.Value ? StorageResponse.CreateSuccess() : StorageResponse.CreateNotExist();
     }
 
-    public async Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath)
+    public async Task<StorageDisposableResponse<Stream>> DownloadFile(PathBuilder path)
     {
-        BlobClient blob = _client.GetBlobClient(fileSubPath);
+        BlobClient blob = _client.GetBlobClient(path.ToAzurePath());
         try
         {
             await using Stream stream = await blob.OpenReadAsync();
@@ -121,9 +120,9 @@ public class AzureBlobStorage : IStorage
         }
     }
 
-    public async Task<StorageResponse<string>> GetFileText(string fileSubPath)
+    public async Task<StorageResponse<string>> GetFileText(PathBuilder path)
     {
-        StorageDisposableResponse<Stream> file = await DownloadFile(fileSubPath);
+        StorageDisposableResponse<Stream> file = await DownloadFile(path);
         if (file.Response == null || file.IsSuccess == false)
         {
             return StorageResponse<string>.CreateFailed(string.Empty);
@@ -148,11 +147,5 @@ public class AzureBlobStorage : IStorage
         };
         sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
         return blobClient.GenerateSasUri(sasBuilder).AbsoluteUri;
-    }
-
-    public string BuildUrlName(string[] names)
-    {
-        var nonEmptyNames = names.Where(name => !string.IsNullOrWhiteSpace(name));
-        return string.Join('/', nonEmptyNames);
     }
 }

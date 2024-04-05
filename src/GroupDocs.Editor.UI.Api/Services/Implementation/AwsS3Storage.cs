@@ -27,39 +27,40 @@ public class AwsS3Storage : IStorage, IDisposable
         _logger = logger;
     }
 
-    public async Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, Guid documentCode, string subIndex = "")
+    public async Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, PathBuilder prefixPath)
     {
         List<StorageResponse<StorageFile>> totalResult = new();
         foreach (FileContent one in fileContents)
         {
-            var awsFileName = BuildUrlName(new[] { documentCode.ToString(), subIndex, one.FileName });
+            var awsFileName = BuildUrlName(prefixPath.AppendKey(one.FileName).ToAwsPath());
             PutObjectRequest request = new()
             {
                 BucketName = _customAwsOptions.Bucket,
                 Key = awsFileName,
                 InputStream = one.ResourceStream,
+                AutoCloseStream = false
             };
             PutObjectResponse oneResult = await _s3Client.PutObjectAsync(request);
             if (oneResult.HttpStatusCode != HttpStatusCode.OK) continue;
 
             StorageResponse<StorageFile> oneResultFinal = StorageResponse<StorageFile>.CreateSuccess(new StorageFile
             {
-                DocumentCode = documentCode,
+                DocumentCode = prefixPath.DocumentCode,
                 FileLink = GetFileLink(awsFileName),
-                FileName = one.FileName
+                FileName = one.FileName,
+                ResourceType = one.ResourceType
             });
             totalResult.Add(oneResultFinal);
         }
         return totalResult;
     }
 
-    public async Task<StorageResponse> RemoveFolder(string folderSubPath)
+    public async Task<StorageResponse> RemoveFolder(PathBuilder path)
     {
-        if (string.IsNullOrWhiteSpace(folderSubPath)) { return StorageResponse.CreateFailed(); }
         ListObjectsV2Request listObjectsRequest = new()
         {
             BucketName = _customAwsOptions.Bucket,
-            Prefix = folderSubPath
+            Prefix = BuildUrlName(path.ToAwsPath())
         };
         DeleteObjectsRequest deleteObjectsRequest = new()
         {
@@ -78,29 +79,29 @@ public class AwsS3Storage : IStorage, IDisposable
 
     }
 
-    public async Task<StorageResponse> RemoveFile(string fileSubPath)
+    public async Task<StorageResponse> RemoveFile(PathBuilder path)
     {
-        if (!await Exists(fileSubPath))
+        if (!await Exists(path))
         {
             return StorageResponse.CreateNotExist();
         }
         DeleteObjectRequest request = new()
         {
             BucketName = _customAwsOptions.Bucket,
-            Key = fileSubPath
+            Key = BuildUrlName(path.ToAwsPath())
         };
         DeleteObjectResponse result = await _s3Client.DeleteObjectAsync(request);
         return result.HttpStatusCode == HttpStatusCode.NoContent ? StorageResponse.CreateSuccess() : StorageResponse.CreateNotExist();
     }
 
-    private async Task<bool> Exists(string fileKey)
+    private async Task<bool> Exists(PathBuilder path)
     {
         try
         {
             GetObjectMetadataRequest request = new()
             {
                 BucketName = _customAwsOptions.Bucket,
-                Key = fileKey
+                Key = BuildUrlName(path.ToAwsPath())
             };
             GetObjectMetadataResponse result = await _s3Client.GetObjectMetadataAsync(request);
 
@@ -117,18 +118,19 @@ public class AwsS3Storage : IStorage, IDisposable
         }
     }
 
-    public async Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath)
+    public async Task<StorageDisposableResponse<Stream>> DownloadFile(PathBuilder path)
     {
         GetObjectRequest request = new()
         {
             BucketName = _customAwsOptions.Bucket,
-            Key = fileSubPath,
+            Key = BuildUrlName(path.ToAwsPath()),
         };
         try
         {
             using GetObjectResponse response = await _s3Client.GetObjectAsync(request);
             MemoryStream memoryStream = new();
             await response.ResponseStream.CopyToAsync(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
             return response.HttpStatusCode == HttpStatusCode.NotFound
             ? StorageDisposableResponse<Stream>.CreateNotExist(Stream.Null)
             : StorageDisposableResponse<Stream>.CreateSuccess(memoryStream);
@@ -143,9 +145,9 @@ public class AwsS3Storage : IStorage, IDisposable
         }
     }
 
-    public async Task<StorageResponse<string>> GetFileText(string fileSubPath)
+    public async Task<StorageResponse<string>> GetFileText(PathBuilder path)
     {
-        StorageDisposableResponse<Stream> file = await DownloadFile(fileSubPath);
+        StorageDisposableResponse<Stream> file = await DownloadFile(path);
         if (file.Response == null || file.IsSuccess == false)
         {
             return StorageResponse<string>.CreateFailed(string.Empty);
@@ -167,10 +169,9 @@ public class AwsS3Storage : IStorage, IDisposable
         return _s3Client.GetPreSignedURL(request);
     }
 
-    public string BuildUrlName(string[] names)
+    public string BuildUrlName(string path)
     {
-        var nonEmptyNames = new[] { _customAwsOptions.RootFolderName }.Union(names).Where(name => !string.IsNullOrWhiteSpace(name));
-        return string.Join('/', nonEmptyNames);
+        return string.Join('/', _customAwsOptions.RootFolderName, path);
     }
 
     public void Dispose()

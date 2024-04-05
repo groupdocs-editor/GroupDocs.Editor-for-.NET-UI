@@ -12,6 +12,7 @@ using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
 using Microsoft.Extensions.Logging;
+using System.Drawing.Imaging;
 
 namespace GroupDocs.Editor.UI.Api.Services.Implementation;
 
@@ -69,7 +70,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                         ResourceStream = stream,
                         ResourceType = ResourceType.OriginalDocument
                     }
-                }, documentCode);
+                }, PathBuilder.New(documentCode));
                 metaFile = new StorageMetaFile<TLoadOptions, TEditOptions>
                 {
                     DocumentCode = documentCode,
@@ -104,7 +105,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                     ResourceStream = request.Stream,
                     ResourceType = ResourceType.OriginalDocument
                 }
-            }, documentCode);
+            }, PathBuilder.New(documentCode));
             documentStream.Seek(0, SeekOrigin.Begin);
             await documentStream.FlushAsync();
             StorageMetaFile<TLoadOptions, TEditOptions> metaFile = new()
@@ -159,7 +160,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             };
             var convertedFile = new StorageSubFile<TEditOptions>(metaFile.OriginalFile.FileName, subIndex)
             { DocumentCode = metaFile.DocumentCode, EditOptions = editOptions };
-            await _storage.RemoveFolder(Path.Combine(convertedFile.DocumentCode.ToString(), convertedFile.SubCode));
+            await _storage.RemoveFolder(PathBuilder.New(convertedFile.DocumentCode, new []{ convertedFile.SubCode }));
             HtmlSaveOptions saveOptions = new()
             {
                 EmbedStylesheetsIntoMarkup = false,
@@ -168,7 +169,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 SavingCallback = new StorageCallback<TEditOptions>(_storage, convertedFile)
             };
             using var originalDocument =
-                await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+                await _storage.DownloadFile(PathBuilder.New(convertedFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
             if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
             {
                 _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
@@ -191,7 +192,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                             ResourceType = ResourceType.HtmlContent,
                         }
                     },
-                    metaFile.DocumentCode, convertedFile.SubCode)).FirstOrDefault();
+                    PathBuilder.New(metaFile.DocumentCode, new[] { convertedFile.SubCode }))).FirstOrDefault();
             if (storageFile is { IsSuccess: true, Response: not null })
             {
                 convertedFile.Resources.Add(storageFile.Response.FileName, storageFile.Response);
@@ -227,7 +228,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             return null;
         }
         using var originalDocument =
-            await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+            await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
         if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
         {
             _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
@@ -250,7 +251,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 ResourceType = ResourceType.Preview
             };
             var preview =
-                (await _storage.SaveFile(new List<FileContent> { file }, documentCode, previewFolder)).FirstOrDefault();
+                (await _storage.SaveFile(new List<FileContent> { file }, PathBuilder.New(documentCode, new[] { previewFolder }))).FirstOrDefault();
             if (preview is { IsSuccess: true, Response: not null })
             {
                 metaFile.PreviewImages.Add(i.ToString(), preview.Response);
@@ -277,7 +278,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         try
         {
             using var originalDocument =
-                await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+                await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
             if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
             {
                 _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
@@ -318,7 +319,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             return null;
         }
         using var originalDocument =
-            await _storage.DownloadFile(Path.Combine(metaFile.DocumentCode.ToString(), metaFile.OriginalFile.FileName));
+            await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
         if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
         {
             _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
@@ -363,7 +364,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     public async Task<StorageResponse<StorageSubFile<TEditOptions>>> UpdateHtmlContent(StorageSubFile<TEditOptions> currentContent,
         string htmlContents)
     {
-        await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, currentContent.EditedHtmlName));
+        await _storage.RemoveFile(PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode, currentContent.EditedHtmlName }));
         if (currentContent.Resources.ContainsKey(currentContent.EditedHtmlName))
         {
             currentContent.Resources.Remove(currentContent.EditedHtmlName);
@@ -375,7 +376,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         stream.Seek(0, SeekOrigin.Begin);
         var storageFile =
             (await _storage.SaveFile(new[] { new FileContent { FileName = currentContent.EditedHtmlName, ResourceStream = stream, ResourceType = ResourceType.HtmlContent } },
-                currentContent.DocumentCode, currentContent.SubCode)).FirstOrDefault();
+                PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode }))).FirstOrDefault();
         if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
         {
             return StorageResponse<StorageSubFile<TEditOptions>>.CreateFailed(new StorageSubFile<TEditOptions>(string.Empty, string.Empty));
@@ -389,7 +390,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     {
         if (!string.IsNullOrWhiteSpace(resource.OldResourceName))
         {
-            await _storage.RemoveFile(Path.Combine(currentContent.DocumentCode.ToString(), currentContent.SubCode, resource.OldResourceName));
+            await _storage.RemoveFile(PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode, resource.OldResourceName }));
             if (currentContent.Resources.ContainsKey(resource.OldResourceName))
             {
                 currentContent.Resources.Remove(resource.OldResourceName);
@@ -417,7 +418,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         await using var fileStream = resource.File.OpenReadStream();
         var storageFile =
             (await _storage.SaveFile(new[] { new FileContent { FileName = resource.File.FileName, ResourceStream = fileStream, ResourceType = type } },
-                currentContent.DocumentCode, currentContent.SubCode)).FirstOrDefault();
+                PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode }))).FirstOrDefault();
         if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
         {
             return StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>.CreateFailed(new StorageSubFile<TEditOptions>(string.Empty, string.Empty), new StorageFile());
@@ -475,8 +476,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         try
         {
             var response =
-                await _storage.GetFileText(Path.Combine(oneSubFile.DocumentCode.ToString(), oneSubFile.SubCode,
-                    oneSubFile.EditedHtmlName));
+                await _storage.GetFileText(PathBuilder.New(oneSubFile.DocumentCode, new[] { oneSubFile.SubCode, oneSubFile.EditedHtmlName }));
             if (response is not { IsSuccess: true } || response.Response == null)
             {
                 throw new ArgumentException("Cannot get a html file from storage", nameof(response.Response));
@@ -485,9 +485,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             List<IHtmlResource> resources = new(oneSubFile.Resources.Count);
             foreach (var oneFile in oneSubFile.Resources.Values)
             {
-                var stream = await _storage.DownloadFile(Path.Combine(oneSubFile.DocumentCode.ToString(),
-                    oneSubFile.SubCode, oneFile.FileName));
-
+                var stream = await _storage.DownloadFile(PathBuilder.New(oneSubFile.DocumentCode, new[] { oneSubFile.SubCode, oneFile.FileName }));
                 if (stream is not { IsSuccess: true } || stream.Response == null)
                 {
                     continue;

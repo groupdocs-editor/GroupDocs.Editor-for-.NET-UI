@@ -108,7 +108,7 @@ public class WordProcessingController : ControllerBase
         {
             if (request.EditOptions.IsOptionsEquals(page.EditOptions))
             {
-                var response = await _storage.DownloadFile(Path.Combine(page.DocumentCode.ToString(), page.SubCode, page.EditedHtmlName));
+                var response = await _storage.DownloadFile(PathBuilder.New(page.DocumentCode, new[] { page.SubCode, page.EditedHtmlName }));
                 if (response is not { IsSuccess: true } || response.Response == null)
                 {
                     return BadRequest(response.Status.ToString());
@@ -305,7 +305,7 @@ public class WordProcessingController : ControllerBase
         }
 
         var page = meta.StorageSubFiles["0"];
-        return Ok(page.Stylesheets);
+        return Ok(page.Stylesheets.ToList());
     }
 
     [HttpGet("metaInfo/{documentCode:guid}")]

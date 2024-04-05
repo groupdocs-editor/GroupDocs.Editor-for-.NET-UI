@@ -6,9 +6,9 @@ namespace GroupDocs.Editor.UI.Api.Services.Interfaces;
 
 public interface IStorage
 {
-    public Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, Guid documentCode, string subIndex = "");
-    public Task<StorageResponse> RemoveFolder(string folderSubPath);
-    public Task<StorageResponse> RemoveFile(string fileSubPath);
-    public Task<StorageDisposableResponse<Stream>> DownloadFile(string fileSubPath);
-    Task<StorageResponse<string>> GetFileText(string fileSubPath);
+    public Task<IEnumerable<StorageResponse<StorageFile>>> SaveFile(IEnumerable<FileContent> fileContents, PathBuilder prefixPath);
+    public Task<StorageResponse> RemoveFolder(PathBuilder path);
+    public Task<StorageResponse> RemoveFile(PathBuilder path);
+    public Task<StorageDisposableResponse<Stream>> DownloadFile(PathBuilder path);
+    Task<StorageResponse<string>> GetFileText(PathBuilder path);
 }

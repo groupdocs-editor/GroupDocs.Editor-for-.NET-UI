@@ -232,7 +232,7 @@ public class PresentationControllerTests
             };
         StorageDisposableResponse<Stream> expectedFile = StorageDisposableResponse<Stream>.CreateSuccess(expectedHtml);
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
-        _mockStorage.Setup(a => a.DownloadFile(Path.Combine(documentCode.ToString(), "0", "presentation.html")))
+        _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(expectedFile);
         // Act
         var result = await presentationController.Edit(request);
