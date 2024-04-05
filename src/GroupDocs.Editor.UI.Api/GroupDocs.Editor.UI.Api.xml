@@ -845,13 +845,12 @@
             <param name="request">The save option.</param>
             <returns></returns>
         </member>
-        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.LocalStorage.SaveFile(System.Collections.Generic.IEnumerable{GroupDocs.Editor.UI.Api.Models.DocumentConvertor.FileContent},System.Guid,System.String)">
+        <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.LocalStorage.SaveFile(System.Collections.Generic.IEnumerable{GroupDocs.Editor.UI.Api.Models.DocumentConvertor.FileContent},GroupDocs.Editor.UI.Api.Models.Storage.PathBuilder)">
             <summary>
             Saves the files to the target subfolder, or if a subfolder is not specified, saves them into the root folder.
             </summary>
             <param name="fileContents">The file contents.</param>
-            <param name="documentCode">The document code.</param>
-            <param name="subIndex">The optional target subfolder index-name where the files should be saved.</param>
+            <param name="prefixPath">The document's path.</param>
             <returns>list of the instance of <see cref="T:GroupDocs.Editor.UI.Api.Models.Storage.StorageFile"/></returns>
         </member>
         <member name="P:GroupDocs.Editor.UI.Api.Services.Options.LicenseOptions.Type">

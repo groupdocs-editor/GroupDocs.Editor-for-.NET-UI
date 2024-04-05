@@ -21,6 +21,5 @@ public class WordProcessingUploadRequest
     /// <value>
     /// The load options.
     /// </value>
-    [Required]
-    public WordProcessingLoadOptions LoadOptions { get; set; }
+    public WordProcessingLoadOptions? LoadOptions { get; set; }
 }

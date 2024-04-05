@@ -3,6 +3,7 @@ using GroupDocs.Editor.UI.Api.Models.DocumentConvertor;
 using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using System.Drawing.Imaging;
 using System.Text.Json;
 
 namespace GroupDocs.Editor.UI.Api.Services.Implementation;
@@ -32,22 +33,22 @@ public class MetaFileStorageCache<TLoadOptions, TEditOptions> : IMetaFileStorage
                 cacheEntry.SetAbsoluteExpiration(TimeSpan.FromHours(1));
                 await using Stream metaStream = new MemoryStream();
                 await JsonSerializer.SerializeAsync(metaStream, metaFile);
-                var file = Path.Combine(metaFile.DocumentCode.ToString(), MetaFileName);
+                var file = PathBuilder.New(metaFile.DocumentCode, new []{ MetaFileName });
                 await _storage.RemoveFile(file);
                 await _storage.SaveFile(new[] { new FileContent { FileName = MetaFileName, ResourceStream = metaStream } },
-                    metaFile.DocumentCode);
+                    PathBuilder.New(metaFile.DocumentCode));
                 return metaFile;
             });
     }
 
-    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> DownloadFile(Guid documentFolderCode)
+    public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> DownloadFile(Guid documentCode)
     {
         return await _memoryCache.GetOrCreateAsync(
-            documentFolderCode,
+            documentCode,
             async cacheEntry =>
             {
                 cacheEntry.SetAbsoluteExpiration(TimeSpan.FromHours(1));
-                var file = Path.Combine(documentFolderCode.ToString(), MetaFileName);
+                var file = PathBuilder.New(documentCode, new[] { MetaFileName });
                 using var response = await _storage.DownloadFile(file);
                 var data = response is not { IsSuccess: true } || response.Response == null
                     ? null
