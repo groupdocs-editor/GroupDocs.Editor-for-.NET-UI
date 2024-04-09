@@ -39,6 +39,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.Email.SpaSample", "samples\GroupDocs.Editor.UI.Email.SpaSample\GroupDocs.Editor.UI.Email.SpaSample.csproj", "{8F6D9740-0A74-4139-8B65-E4E52318D400}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Editor.UI.RestFulApi", "samples\GroupDocs.Editor.UI.RestFulApi\GroupDocs.Editor.UI.RestFulApi.csproj", "{426A5262-76DC-47F7-9DA4-BAF3A42ACC59}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{8F6D9740-0A74-4139-8B65-E4E52318D400}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F6D9740-0A74-4139-8B65-E4E52318D400}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F6D9740-0A74-4139-8B65-E4E52318D400}.Release|Any CPU.Build.0 = Release|Any CPU
+		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +96,7 @@ Global
 		{33348B6B-8AA6-4018-BD81-42C423D5500E} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{1B9F4715-F89B-4176-B7ED-01C138DFDC4D} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{8F6D9740-0A74-4139-8B65-E4E52318D400} = {C6A1FF7E-D061-4729-AB27-164452250290}
+		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59} = {C6A1FF7E-D061-4729-AB27-164452250290}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30886819-14E1-4F8A-9628-3E0A980CAD85}
