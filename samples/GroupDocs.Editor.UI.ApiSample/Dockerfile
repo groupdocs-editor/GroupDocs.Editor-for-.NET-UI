@@ -3,8 +3,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 
 RUN apt-get update && apt-get install -y \
- libgdiplus  \
- libc6-dev  \
  libfontconfig1 \
  libfreetype6 \
  libexpat1 \
