@@ -65,11 +65,11 @@ The `Type` field corresponds to different license sources, including local path,
 When running the API on Linux or in a Docker container, specific packages need to be installed, as shown below:
 
 ```bash
-RUN apt-get update && apt-get install -y libgdiplus
-
-RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
-RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
-RUN fc-cache -f -v
+RUN apt-get update && apt-get install -y \
+ libfontconfig1 \
+ libfreetype6 \
+ libexpat1 \
+ libpng16-16
 ```
 
 ## Amazon S3 Storage
