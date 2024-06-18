@@ -14,9 +14,7 @@ RUN apt-get update && apt-get install -y \
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["NuGet.Config", "."]
 COPY ["samples/GroupDocs.Editor.UI.RestFulApi/GroupDocs.Editor.UI.RestFulApi.csproj", "samples/GroupDocs.Editor.UI.RestFulApi/"]
-COPY ["src/GroupDocs.Editor.UI.Api/GroupDocs.Editor.UI.Api.csproj", "src/GroupDocs.Editor.UI.Api/"]
 RUN dotnet restore "./samples/GroupDocs.Editor.UI.RestFulApi/GroupDocs.Editor.UI.RestFulApi.csproj"
 COPY . .
 WORKDIR "/src/samples/GroupDocs.Editor.UI.RestFulApi"
