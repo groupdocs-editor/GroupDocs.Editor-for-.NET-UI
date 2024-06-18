@@ -12,7 +12,6 @@ using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using GroupDocs.Editor.UI.Api.Services.Options;
 using Microsoft.Extensions.Logging;
-using System.Drawing.Imaging;
 
 namespace GroupDocs.Editor.UI.Api.Services.Implementation;
 
@@ -51,32 +50,31 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     {
         try
         {
-            StorageMetaFile<TLoadOptions, TEditOptions>? metaFile = null;
-            using Editor editor = new(DocumentAction, request.Format);
-            if (metaFile == null) { return null; }
-            var info = editor.GetDocumentInfo(null);
+            await using Stream stream = new MemoryStream();
+            using Editor editor = new(request.Format);
+            editor.Save(stream);
+            var documentCode = _idGenerator.GenerateDocumentCode();
+            var originalFile = _storage.SaveFile(new List<FileContent>
+            {
+                new()
+                {
+                    FileName = request.FileName,
+                    ResourceStream = stream,
+                    ResourceType = ResourceType.OriginalDocument
+                }
+            }, PathBuilder.New(documentCode));
+            StorageMetaFile<TLoadOptions, TEditOptions> metaFile = new StorageMetaFile<TLoadOptions, TEditOptions>
+            {
+                DocumentCode = documentCode,
+                OriginalFile = originalFile.Result.FirstOrDefault()?.Response ?? throw new FileLoadException()
+            };
+
+            //TODO will be rework on next releases.
+            stream.Seek(0, SeekOrigin.Begin);
+            var info = GetDocumentInfo(stream);
             metaFile.DocumentInfo = _mapper.Map<StorageDocumentInfo>(info);
             await _metaFileStorageCache.UpdateFiles(metaFile);
             return metaFile;
-
-            void DocumentAction(Stream stream)
-            {
-                var documentCode = _idGenerator.GenerateDocumentCode();
-                var originalFile = _storage.SaveFile(new List<FileContent>
-                {
-                    new()
-                    {
-                        FileName = request.FileName,
-                        ResourceStream = stream,
-                        ResourceType = ResourceType.OriginalDocument
-                    }
-                }, PathBuilder.New(documentCode));
-                metaFile = new StorageMetaFile<TLoadOptions, TEditOptions>
-                {
-                    DocumentCode = documentCode,
-                    OriginalFile = originalFile.Result.FirstOrDefault()?.Response ?? throw new FileLoadException()
-                };
-            }
         }
         catch (Exception e)
         {
@@ -132,10 +130,10 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// <param name="stream">The stream.</param>
     /// <param name="loadOptions">The load options.</param>
     /// <returns></returns>
-    public IDocumentInfo GetDocumentInfo(Stream stream, TLoadOptions loadOptions)
+    public IDocumentInfo GetDocumentInfo(Stream stream, TLoadOptions? loadOptions = default)
     {
         using Editor editor = new(delegate { return stream; }, delegate { return loadOptions; });
-        return editor.GetDocumentInfo(loadOptions.Password ?? null);
+        return editor.GetDocumentInfo(loadOptions?.Password ?? null);
     }
 
     /// <summary>
@@ -160,7 +158,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             };
             var convertedFile = new StorageSubFile<TEditOptions>(metaFile.OriginalFile.FileName, subIndex)
             { DocumentCode = metaFile.DocumentCode, EditOptions = editOptions };
-            await _storage.RemoveFolder(PathBuilder.New(convertedFile.DocumentCode, new []{ convertedFile.SubCode }));
+            await _storage.RemoveFolder(PathBuilder.New(convertedFile.DocumentCode, new[] { convertedFile.SubCode }));
             HtmlSaveOptions saveOptions = new()
             {
                 EmbedStylesheetsIntoMarkup = false,
