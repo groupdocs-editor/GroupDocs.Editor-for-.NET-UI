@@ -5,7 +5,6 @@ using GroupDocs.Editor.UI.Api.Services.Licensing;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddEditorControllers();
 builder.Services.AddEditorSwagger();
 // uncomment for set license
