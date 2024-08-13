@@ -1,11 +1,6 @@
-﻿using GroupDocs.Editor.Formats;
-using GroupDocs.Editor.Metadata;
-using GroupDocs.Editor.UI.Api.JsonConverters;
-using System.Text.Json.Serialization;
+﻿namespace GroupDocs.Editor.UI.Api.Models.Storage;
 
-namespace GroupDocs.Editor.UI.Api.Models.Storage;
-
-public class StorageDocumentInfo : IDocumentInfo
+public class StorageDocumentInfo
 {
     public string FamilyFormat { get; set; }
 
@@ -15,6 +10,5 @@ public class StorageDocumentInfo : IDocumentInfo
 
     public bool IsEncrypted { get; set; }
 
-    [JsonConverter(typeof(FormatJsonConverter))]
-    public IDocumentFormat Format { get; set; }
+    public string Format { get; set; }
 }
