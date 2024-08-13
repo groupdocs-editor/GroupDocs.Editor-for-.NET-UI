@@ -1,5 +1,4 @@
 ﻿using GroupDocs.Editor.Options;
-using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
 namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.WordProcessing;
@@ -16,7 +15,7 @@ public class WordProcessingDownloadRequest
     /// The document code.
     /// </value>
     [Required]
-    [FromQuery] public Guid DocumentCode { get; set; }
+    public Guid DocumentCode { get; set; }
 
     /// <summary>
     /// Gets or sets the format.
@@ -25,7 +24,7 @@ public class WordProcessingDownloadRequest
     /// The format.
     /// </value>
     [Required]
-    [FromQuery] public string Format { get; set; }
+    public string Format { get; set; }
 
     /// <summary>
     /// Gets or sets the save options.

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GroupDocs.Editor.Formats;
+using GroupDocs.Editor.Formats.Abstraction;
 using GroupDocs.Editor.HtmlCss.Resources;
 using GroupDocs.Editor.HtmlCss.Resources.Images.Vector;
 using GroupDocs.Editor.Metadata;
@@ -93,7 +94,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         try
         {
             await using Stream documentStream = request.Stream;
-            using Editor editor = new(delegate { return documentStream; }, delegate { return request.LoadOptions; });
+            using Editor editor = new(documentStream, request.LoadOptions);
             var documentCode = _idGenerator.GenerateDocumentCode();
             var originalFile = await _storage.SaveFile(new List<FileContent>
             {
@@ -132,7 +133,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// <returns></returns>
     public IDocumentInfo GetDocumentInfo(Stream stream, TLoadOptions? loadOptions = default)
     {
-        using Editor editor = new(delegate { return stream; }, delegate { return loadOptions; });
+        using Editor editor = new(stream, loadOptions);
         return editor.GetDocumentInfo(loadOptions?.Password ?? null);
     }
 
@@ -173,7 +174,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
                 throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
             }
-            using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return loadOptions; });
+            using Editor editor = new(originalDocument.Response, loadOptions);
             using EditableDocument doc = editor.Edit(editOptions);
             await using Stream document = new MemoryStream();
             await using StreamWriter writer = new(document);
@@ -233,7 +234,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
         }
 
-        using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
+        using Editor editor = new(originalDocument.Response, metaFile.OriginalLoadOptions);
         IDocumentInfo documentInfo = editor.GetDocumentInfo(metaFile.OriginalLoadOptions?.Password ?? null);
         for (int i = 0; i < documentInfo.PageCount; i++)
         {
@@ -282,7 +283,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
                 throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
             }
-            using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
+            using Editor editor = new(originalDocument.Response, metaFile.OriginalLoadOptions);
             using EditableDocument doc = metaFile.StorageSubFiles.Any(a => a.Value.IsEdited)
                 ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles["0"])
                 : editor.Edit();
@@ -323,7 +324,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
             throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
         }
-        using Editor editor = new(delegate { return originalDocument.Response; }, delegate { return metaFile.OriginalLoadOptions; });
+        using Editor editor = new(originalDocument.Response, metaFile.OriginalLoadOptions);
         using EditableDocument doc = metaFile.StorageSubFiles.Any(a => a.Value.IsEdited)
             ? await EditableDocumentFromMarkup(metaFile.StorageSubFiles["0"])
             : editor.Edit();
@@ -338,7 +339,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         };
     }
 
-    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : IDocumentFormat
+    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : DocumentFormatBase
     {
         if (typeof(TFormat) == typeof(WordProcessingFormats))
         {

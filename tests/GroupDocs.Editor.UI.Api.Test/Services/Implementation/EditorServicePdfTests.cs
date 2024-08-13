@@ -104,7 +104,7 @@ public class EditorServicePdfTests
 
         // Assert
         result.PageCount.Should().Be(1);
-        result.Size.Should().Be(10408);
+        result.Size.Should().Be(10406L);
         result.Format.Should().Be(FixedLayoutFormats.Pdf);
         result.IsEncrypted.Should().BeFalse();
         _mockRepository.VerifyAll();

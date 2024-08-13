@@ -1,4 +1,4 @@
-﻿using GroupDocs.Editor.Formats;
+﻿using GroupDocs.Editor.Formats.Abstraction;
 using GroupDocs.Editor.Metadata;
 using GroupDocs.Editor.Options;
 using GroupDocs.Editor.UI.Api.Controllers.RequestModels;
@@ -27,7 +27,7 @@ public interface IEditorService<TLoadOptions, TEditOptions> : IDisposable
 
     public Task<FileContent?> ConvertToDocument(DownloadDocumentRequest request);
 
-    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : IDocumentFormat;
+    public IEnumerable<TFormat> GetSupportedFormats<TFormat>() where TFormat : DocumentFormatBase;
 
     Task<StorageResponse<StorageSubFile<TEditOptions>>> UpdateHtmlContent(StorageSubFile<TEditOptions> currentContent, string htmlContents);
     Task<StorageUpdateResourceResponse<StorageSubFile<TEditOptions>, StorageFile>> UpdateResource(StorageSubFile<TEditOptions> currentContent, UploadResourceRequest resource);

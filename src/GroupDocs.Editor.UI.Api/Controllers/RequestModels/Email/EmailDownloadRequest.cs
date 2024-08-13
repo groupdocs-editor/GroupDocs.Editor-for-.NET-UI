@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using GroupDocs.Editor.Options;
+﻿using GroupDocs.Editor.Options;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace GroupDocs.Editor.UI.Api.Controllers.RequestModels.Email;
 
@@ -25,7 +25,7 @@ public class EmailDownloadRequest
     /// The format.
     /// </value>
     [Required]
-    [FromQuery] public string Format { get; set; }
+    public string Format { get; set; }
 
     /// <summary>
     /// Gets or sets the save options.
