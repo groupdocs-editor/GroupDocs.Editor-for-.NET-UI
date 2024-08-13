@@ -25,7 +25,7 @@ public class PdfDownloadRequest
     /// The format.
     /// </value>
     [Required]
-    [FromQuery] public string Format { get; set; }
+    public string Format { get; set; }
 
     /// <summary>
     /// Gets or sets the load options.

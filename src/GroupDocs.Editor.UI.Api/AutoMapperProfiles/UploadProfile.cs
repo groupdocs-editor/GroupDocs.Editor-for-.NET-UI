@@ -29,8 +29,7 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<WordProcessingNewDocumentRequest, CreateDocumentRequest>()
             .ForMember(dest => dest.Format,
-                opt => opt.MapFrom(src =>
-                    WordProcessingFormats.FromExtension(src.Format)))
+                opt => opt.MapFrom(src => (WordProcessingFormats)src.Format))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newDocxDocument.{src.Format}" : src.FileName));
@@ -63,8 +62,7 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<PresentationNewDocumentRequest, CreateDocumentRequest>()
             .ForMember(dest => dest.Format,
-                opt => opt.MapFrom(src =>
-                    PresentationFormats.FromExtension(src.Format)))
+                opt => opt.MapFrom(src => (PresentationFormats)src.Format))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newPptxDocument.{src.Format}" : src.FileName));
@@ -79,8 +77,7 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<SpreadsheetNewDocumentRequest, CreateDocumentRequest>()
             .ForMember(dest => dest.Format,
-                opt => opt.MapFrom(src =>
-                    SpreadsheetFormats.FromExtension(src.Format)))
+                opt => opt.MapFrom(src => (SpreadsheetFormats)src.Format))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newDocument.{src.Format}" : src.FileName));
@@ -96,8 +93,7 @@ public class UploadProfile : Profile
                 opt => opt.MapFrom(src => src.File.FileName));
         CreateMap<EmailNewDocumentRequest, CreateDocumentRequest>()
             .ForMember(dest => dest.Format,
-                opt => opt.MapFrom(src =>
-                    EmailFormats.FromExtension(src.Format)))
+                opt => opt.MapFrom(src => (EmailFormats)src.Format))
             .ForMember(dest => dest.FileName,
                 opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.FileName) ? $"newEmail.{src.Format}" : src.FileName));

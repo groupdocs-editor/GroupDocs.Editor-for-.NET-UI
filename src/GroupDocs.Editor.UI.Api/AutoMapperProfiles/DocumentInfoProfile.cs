@@ -10,24 +10,24 @@ public class DocumentInfoProfile : Profile
     public DocumentInfoProfile()
     {
         CreateMap<WordProcessingDocumentInfo, StorageDocumentInfo>()
-            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => (string)src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "WordProcessing"));
         CreateMap<FixedLayoutDocumentInfo, StorageDocumentInfo>()
             .ForMember(dest => dest.Format,
-                opt => opt.MapFrom(src => FixedLayoutFormats.FromExtension(src.Format.Extension)))
+                opt => opt.MapFrom(src => FixedLayoutFormats.FromExtension((string)src.Format)))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => src.Format == FixedLayoutFormats.Pdf ? "Pdf" : "Xps"));
         CreateMap<PresentationDocumentInfo, StorageDocumentInfo>()
-            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => (string)src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "Presentation"));
         CreateMap<SpreadsheetDocumentInfo, StorageDocumentInfo>()
-            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => (string)src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "Spreadsheet"));
         CreateMap<EmailDocumentInfo, StorageDocumentInfo>()
-            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => src.Format))
+            .ForMember(dest => dest.Format, opt => opt.MapFrom(src => (string)src.Format))
             .ForMember(dest => dest.FamilyFormat,
                 opt => opt.MapFrom(src => "Email"));
     }
