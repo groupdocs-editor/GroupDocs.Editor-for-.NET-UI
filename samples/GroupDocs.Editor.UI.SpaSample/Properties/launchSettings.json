@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "GroupDocs.Editor.UI.SpaSample": {
+    "WordProcessing.Sample": {
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7246;http://localhost:5065",

@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_workflow", "_workflow", "{
 		.github\workflows\Test_windows-latest.yml = .github\workflows\Test_windows-latest.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.SpaSample", "samples\GroupDocs.Editor.UI.SpaSample\GroupDocs.Editor.UI.SpaSample.csproj", "{A51986A0-4FDB-4D98-93AB-31047E4A637C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.WordProcessing.SpaSample", "samples\GroupDocs.Editor.UI.SpaSample\GroupDocs.Editor.UI.WordProcessing.SpaSample.csproj", "{A51986A0-4FDB-4D98-93AB-31047E4A637C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupDocs.Editor.UI.ReactSpaSample", "samples\GroupDocs.Editor.UI.ReactSpaSample\GroupDocs.Editor.UI.ReactSpaSample.csproj", "{9EE20A59-1E00-4928-BF47-EEDE61BE7D0F}"
 EndProject
