@@ -140,7 +140,7 @@ public class EditorServiceWordProcessingTests
         // Arrange
         var service = CreateService();
         using Stream stream = TestFile.WordProcessing.OpenFile();
-        WordProcessingLoadOptions loadOptions = new WordProcessingLoadOptions();
+        WordProcessingLoadOptions loadOptions = new();
 
         // Act
         var result = service.GetDocumentInfo(stream, loadOptions);
@@ -300,7 +300,7 @@ public class EditorServiceWordProcessingTests
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
 
-        PdfSaveOptions saveOptions = new PdfSaveOptions();
+        PdfSaveOptions saveOptions = new();
         DownloadPdfRequest request = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         await using Stream stream = TestFile.WordProcessing.OpenFile();
         StorageMetaFile<WordProcessingLoadOptions, WordProcessingEditOptions> metaFile = new()

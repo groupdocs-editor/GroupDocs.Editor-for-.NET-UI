@@ -97,7 +97,7 @@ public class EditorServicePdfTests
         // Arrange
         var service = CreateService();
         using Stream stream = TestFile.Pdf.OpenFile();
-        PdfLoadOptions loadOptions = new PdfLoadOptions();
+        PdfLoadOptions loadOptions = new();
 
         // Act
         var result = service.GetDocumentInfo(stream, loadOptions);

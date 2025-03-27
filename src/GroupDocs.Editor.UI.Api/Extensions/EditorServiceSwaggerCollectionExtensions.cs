@@ -8,6 +8,7 @@ namespace GroupDocs.Editor.UI.Api.Extensions;
 
 public static class EditorServiceSwaggerCollectionExtensions
 {
+
     /// <summary>
     /// Adds the swagger functionality to editor.
     /// </summary>
@@ -73,14 +74,14 @@ public static class EditorServiceSwaggerCollectionExtensions
             Title = $"{version} GroupDocs.Editor.UI Api",
             Version = version,
             Contact = new OpenApiContact
-            { Url = new Uri("https://docs.groupdocs.com/editor/net/"), Name = "GroupDocs.Editor for .NET" },
+            { Url = new Uri($"https://docs.groupdocs.com/editor/net/"), Name = "GroupDocs.Editor for .NET" },
             Description =
                 "Edit Word documents using GroupDocs.Editor for .NET powerful document editing API. It can be used with any external, open source or paid HTML editor.",
-            TermsOfService = new Uri("https://about.groupdocs.com/legal/terms-of-use/"),
+            TermsOfService = new Uri($"https://about.groupdocs.com/legal/terms-of-use/"),
             License = new OpenApiLicense
             {
                 Name = "Metered licenses",
-                Url = new Uri("https://docs.groupdocs.com/editor/net/licensing-and-subscription/")
+                Url = new Uri($"https://docs.groupdocs.com/editor/net/licensing-and-subscription/")
             }
         };
     }

@@ -284,7 +284,7 @@ public class EditorServiceSpreadsheetTests
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
 
-        PdfSaveOptions saveOptions = new PdfSaveOptions();
+        PdfSaveOptions saveOptions = new();
         DownloadPdfRequest request = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         await using Stream stream = TestFile.Spreadsheet.OpenFile();
         StorageMetaFile<SpreadsheetLoadOptions, SpreadsheetEditOptions> metaFile = new()
