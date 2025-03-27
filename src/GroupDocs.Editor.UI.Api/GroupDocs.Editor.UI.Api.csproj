@@ -13,7 +13,7 @@
 	  <RepositoryUrl>https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI</RepositoryUrl>
 	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	  <PackageIcon>images\icon.png</PackageIcon>
-	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\.editorconfig" Link=".editorconfig" />
@@ -27,10 +27,10 @@
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
 	<PackageReference Include="GroupDocs.Editor" Version="25.3.0" />
 	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
-	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-	<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+	<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 	<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.0.0" />
-	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
 	<PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
 	<PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>

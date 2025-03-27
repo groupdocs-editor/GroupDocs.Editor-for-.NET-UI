@@ -70,7 +70,7 @@ public class EditorServicePresentationTests
         StorageResponse<StorageFile> storageResponse = StorageResponse<StorageFile>.CreateSuccess(storageFile);
         CreateDocumentRequest request = new() { FileName = "document.pptx", Format = PresentationFormats.Pptx };
         _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
             .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
@@ -117,7 +117,7 @@ public class EditorServicePresentationTests
         _mockMapper.Setup(a => a.Map<StorageDocumentInfo>(It.IsAny<PresentationDocumentInfo>())).Returns(docInfo);
         _mockIdGeneratorService.Setup(a => a.GenerateDocumentCode()).Returns(documentCode);
         _mockStorage.Setup(a => a.SaveFile(It.IsAny<List<FileContent>>(), It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
             .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
@@ -209,14 +209,14 @@ public class EditorServicePresentationTests
                     It.Is<IEnumerable<FileContent>>(contents => contents.Any(ca =>
                         ca.ResourceType == ResourceType.Stylesheet && ca.FileName.Equals("style.css"))),
                     It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { styleStorageResponse });
+            .ReturnsAsync([styleStorageResponse]);
 
         _mockStorage.Setup(a =>
                 a.SaveFile(
                     It.Is<IEnumerable<FileContent>>(contents => contents.Any(ca =>
                         ca.ResourceType == ResourceType.HtmlContent && ca.FileName.Equals(TestFile.Presentation.ChangeExtension("html")))),
                     It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         _mockMetaFileStorageCache.Setup(a =>
                 a.UpdateFiles(It.IsAny<StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>>()))
             .ReturnsAsync(new StorageMetaFile<PresentationLoadOptions, PresentationEditOptions>());
@@ -273,7 +273,7 @@ public class EditorServicePresentationTests
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
                     It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         _mockMetaFileStorageCache.Setup(a =>
@@ -297,7 +297,7 @@ public class EditorServicePresentationTests
         var service = CreateService();
         Guid documentCode = Guid.NewGuid();
 
-        PdfSaveOptions saveOptions = new PdfSaveOptions();
+        PdfSaveOptions saveOptions = new();
         DownloadPdfRequest request = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         await using Stream stream = TestFile.Presentation.OpenFile();
         StorageMetaFile<PresentationLoadOptions, PresentationEditOptions> metaFile = new()
@@ -420,7 +420,7 @@ public class EditorServicePresentationTests
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
                     It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         // Act
         var result = await service.UpdateHtmlContent(currentContent, htmlContents);
 
@@ -455,7 +455,7 @@ public class EditorServicePresentationTests
         _mockStorage.Setup(a =>
                 a.SaveFile(It.IsAny<IEnumerable<FileContent>>(),
                     It.IsAny<PathBuilder>()))
-            .ReturnsAsync(new List<StorageResponse<StorageFile>> { storageResponse });
+            .ReturnsAsync([storageResponse]);
         // Act
         var result = await service.UpdateResource(currentContent, resource);
 

@@ -408,8 +408,7 @@ public class PresentationControllerTests
                 }
             };
         StorageFile storageFile = new() { DocumentCode = documentCode, FileName = fileName, ResourceType = ResourceType.Stylesheet };
-        StorageSubFile<PresentationEditOptions> storageSub =
-            new StorageSubFile<PresentationEditOptions>(documentCode.ToString(), "0");
+        StorageSubFile<PresentationEditOptions> storageSub = new(documentCode.ToString(), "0");
         StorageUpdateResourceResponse<StorageSubFile<PresentationEditOptions>, StorageFile>
             storageUpdateResourceResponse =
                 StorageUpdateResourceResponse<StorageSubFile<PresentationEditOptions>, StorageFile>.CreateSuccess(
@@ -563,7 +562,7 @@ public class PresentationControllerTests
                         }}
                 }
             };
-        PresentationStorageInfo presentationStorageInfo = new PresentationStorageInfo() { DocumentCode = documentCode };
+        PresentationStorageInfo presentationStorageInfo = new() { DocumentCode = documentCode };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
         _mockMapper.Setup(a => a.Map<PresentationStorageInfo>(storageMetaFile)).Returns(presentationStorageInfo);
         // Act

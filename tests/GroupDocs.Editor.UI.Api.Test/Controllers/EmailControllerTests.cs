@@ -456,7 +456,7 @@ public class EmailControllerTests
         var okObjectResult = result as OkObjectResult;
         okObjectResult.Should().NotBeNull();
         var responseDocument = okObjectResult?.Value as IEnumerable<StorageFile>;
-        IEnumerable<StorageFile> storageFiles = responseDocument as StorageFile[] ?? responseDocument?.ToArray() ?? Array.Empty<StorageFile>();
+        IEnumerable<StorageFile> storageFiles = responseDocument as StorageFile[] ?? responseDocument?.ToArray() ?? [];
         storageFiles.Should().NotBeNull();
         storageFiles.Should().BeEquivalentTo(new List<StorageFile> { new() { FileName = "style.css", ResourceType = ResourceType.Stylesheet } });
         mockRepository.VerifyAll();

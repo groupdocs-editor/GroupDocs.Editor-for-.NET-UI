@@ -1,12 +1,11 @@
 ﻿using FluentAssertions;
 using GroupDocs.Editor.UI.Api.Controllers;
+using GroupDocs.Editor.UI.Api.Models.Storage;
 using GroupDocs.Editor.UI.Api.Models.Storage.Responses;
 using GroupDocs.Editor.UI.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using System.Web;
-using GroupDocs.Editor.UI.Api.Models.Storage;
 
 namespace GroupDocs.Editor.UI.Api.Test.Controllers;
 
@@ -34,23 +33,23 @@ public class LocalFileControllerTests
     public async Task DownloadFromSubDocument()
     {
         // Arrange
-        var localFileController = CreateLocalFileController();
+        LocalFileController localFileController = CreateLocalFileController();
         Guid documentCode = Guid.NewGuid();
         const int subDocumentIndex = 0;
         const string fileName = "WordProcessing.docx";
-        await using var stream = new MemoryStream();
+        await using MemoryStream stream = new();
         _mockStorage
             .Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         // Act
-        var result = await localFileController.DownloadFromSubDocument(
+        IActionResult result = await localFileController.DownloadFromSubDocument(
             documentCode,
             subDocumentIndex,
             fileName);
 
         // Assert
         result.Should().NotBeNull();
-        var file = result as FileStreamResult;
+        FileStreamResult? file = result as FileStreamResult;
         file.Should().NotBeNull();
         file?.FileStream.Should().BeSameAs(stream);
         file?.FileDownloadName.Should().Be(fileName);
@@ -62,23 +61,23 @@ public class LocalFileControllerTests
     public async Task DownloadPresentationFromSubDocument()
     {
         // Arrange
-        var localFileController = CreateLocalFileController();
+        LocalFileController localFileController = CreateLocalFileController();
         Guid documentCode = Guid.NewGuid();
         const int subDocumentIndex = 0;
         const string fileName = "Presentation.pptx";
-        await using var stream = new MemoryStream();
+        await using MemoryStream stream = new();
         _mockStorage
             .Setup(a => a.DownloadFile(It.IsAny<PathBuilder>()))
             .ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
         // Act
-        var result = await localFileController.DownloadFromSubDocument(
+        IActionResult result = await localFileController.DownloadFromSubDocument(
             documentCode,
             subDocumentIndex,
             fileName);
 
         // Assert
         result.Should().NotBeNull();
-        var file = result as FileStreamResult;
+        FileStreamResult? file = result as FileStreamResult;
         file.Should().NotBeNull();
         file?.FileStream.Should().BeSameAs(stream);
         file?.FileDownloadName.Should().Be(fileName);
@@ -90,24 +89,24 @@ public class LocalFileControllerTests
     public async Task Download()
     {
         // Arrange
-        var localFileController = CreateLocalFileController();
+        LocalFileController localFileController = CreateLocalFileController();
         Guid documentCode = Guid.NewGuid();
         const string fileName = "WordProcessing.docx";
-        await using var stream = new MemoryStream();
+        await using MemoryStream stream = new();
         _mockStorage.Setup(a => a.DownloadFile(It.IsAny<PathBuilder>())).ReturnsAsync(StorageDisposableResponse<Stream>.CreateSuccess(stream));
 
         // Act
-        var result = await localFileController.Download(
+        IActionResult result = await localFileController.Download(
             documentCode,
             fileName);
 
         // Assert
         result.Should().NotBeNull();
-        var file = result as FileStreamResult;
+        FileStreamResult? file = result as FileStreamResult;
         file.Should().NotBeNull();
-        file.FileStream.Should().BeSameAs(stream);
-        file.FileDownloadName.Should().Be(fileName);
-        file.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        file?.FileStream.Should().BeSameAs(stream);
+        file?.FileDownloadName.Should().Be(fileName);
+        file?.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         _mockRepository.VerifyAll();
     }
 }

@@ -291,8 +291,8 @@ public class WordProcessingControllerTests
         // Arrange
         var wordProcessingController = CreateWordProcessingController();
         Guid documentCode = Guid.NewGuid();
-        PdfSaveOptions saveOptions = new PdfSaveOptions();
-        WordProcessingToPdfDownloadRequest request = new WordProcessingToPdfDownloadRequest() { DocumentCode = documentCode, SaveOptions = saveOptions };
+        PdfSaveOptions saveOptions = new();
+        WordProcessingToPdfDownloadRequest request = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         DownloadPdfRequest downloadPdfRequest = new() { DocumentCode = documentCode, SaveOptions = saveOptions };
         _mockMapper.Setup(a => a.Map<DownloadPdfRequest>(request)).Returns(downloadPdfRequest);
         using MemoryStream stream = new();
@@ -582,7 +582,7 @@ public class WordProcessingControllerTests
                     }}
                 }
             };
-        WordProcessingStorageInfo wordProcessingStorageInfo = new WordProcessingStorageInfo()
+        WordProcessingStorageInfo wordProcessingStorageInfo = new()
         { DocumentCode = documentCode };
         _mockMetaFileStorageCache.Setup(a => a.DownloadFile(documentCode)).ReturnsAsync(storageMetaFile);
         _mockMapper.Setup(a => a.Map<WordProcessingStorageInfo>(storageMetaFile)).Returns(wordProcessingStorageInfo);
