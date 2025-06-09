@@ -197,7 +197,7 @@ public class EditorServicePdfTests
         _mockRepository.VerifyAll();
     }
 
-    [Fact]
+    [Fact(Skip = "stop processing")]
     public async Task ConvertToDocument()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.FeatureManagement;
-using System;
 
 namespace GroupDocs.Editor.UI.Api.Extensions;
 
@@ -44,6 +43,7 @@ public static class EditorServiceCollectionExtensions
     {
         services.AddAutoMapper(typeof(DocumentInfoProfile));
         services.AddMemoryCache();
+        services.AddHttpContextAccessor();
         services.AddSingleton<IIdGeneratorService, IdGeneratorService>();
         var featureManager = (IFeatureManager)services.BuildServiceProvider().GetService(typeof(IFeatureManager))!;
         if (featureManager.IsEnabledAsync(EditorProductFamily.WordProcessing).Result)

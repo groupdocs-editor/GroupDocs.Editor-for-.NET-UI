@@ -835,6 +835,7 @@
             <summary>
             Saves the document to PDF format. If an edited version of the document exists, it will be converted; otherwise, the original document will be converted.
             </summary>
+            <exception cref="T:System.ArgumentNullException"></exception>
             <returns></returns>
         </member>
         <member name="M:GroupDocs.Editor.UI.Api.Services.Implementation.EditorService`2.ConvertToDocument(GroupDocs.Editor.UI.Api.Models.Editor.DownloadDocumentRequest)">

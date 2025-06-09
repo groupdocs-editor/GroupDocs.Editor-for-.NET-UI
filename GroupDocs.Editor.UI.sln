@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Editor.UI.JQueryM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Editor.UI.WordProcessing.SpaSample", "samples\GroupDocs.Editor.UI.WordProcessing.SpaSample\GroupDocs.Editor.UI.WordProcessing.SpaSample.csproj", "{558CFD22-1BD6-212C-D219-F432698248F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Editor.WordProcessing.DemoApi", "samples\GroupDocs.Editor.WordProcessing.DemoApi\GroupDocs.Editor.WordProcessing.DemoApi.csproj", "{F4189A34-D2C8-4EFF-A993-D23388FE2372}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +91,10 @@ Global
 		{558CFD22-1BD6-212C-D219-F432698248F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{558CFD22-1BD6-212C-D219-F432698248F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{558CFD22-1BD6-212C-D219-F432698248F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4189A34-D2C8-4EFF-A993-D23388FE2372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4189A34-D2C8-4EFF-A993-D23388FE2372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4189A34-D2C8-4EFF-A993-D23388FE2372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4189A34-D2C8-4EFF-A993-D23388FE2372}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{426A5262-76DC-47F7-9DA4-BAF3A42ACC59} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{5FB6AB07-0AE1-400B-9D0B-4262962F2DBC} = {C6A1FF7E-D061-4729-AB27-164452250290}
 		{558CFD22-1BD6-212C-D219-F432698248F5} = {C6A1FF7E-D061-4729-AB27-164452250290}
+		{F4189A34-D2C8-4EFF-A993-D23388FE2372} = {C6A1FF7E-D061-4729-AB27-164452250290}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {30886819-14E1-4F8A-9628-3E0A980CAD85}
