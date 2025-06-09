@@ -54,8 +54,8 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             await using Stream stream = new MemoryStream();
             using Editor editor = new(request.Format);
             editor.Save(stream);
-            var documentCode = _idGenerator.GenerateDocumentCode();
-            var originalFile = _storage.SaveFile(new List<FileContent>
+            Guid documentCode = _idGenerator.GenerateDocumentCode();
+            Task<IEnumerable<StorageResponse<StorageFile>>> originalFile = _storage.SaveFile(new List<FileContent>
             {
                 new()
                 {
@@ -72,7 +72,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
 
             //TODO will be rework on next releases.
             stream.Seek(0, SeekOrigin.Begin);
-            var info = GetDocumentInfo(stream);
+            IDocumentInfo info = GetDocumentInfo(stream);
             metaFile.DocumentInfo = _mapper.Map<StorageDocumentInfo>(info);
             await _metaFileStorageCache.UpdateFiles(metaFile);
             return metaFile;
@@ -95,8 +95,8 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         {
             await using Stream documentStream = request.Stream;
             using Editor editor = new(documentStream, request.LoadOptions);
-            var documentCode = _idGenerator.GenerateDocumentCode();
-            var originalFile = await _storage.SaveFile(new List<FileContent>
+            Guid documentCode = _idGenerator.GenerateDocumentCode();
+            IEnumerable<StorageResponse<StorageFile>> originalFile = await _storage.SaveFile(new List<FileContent>
             {
                 new()
                 {
@@ -120,7 +120,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Catch error while save file {fileName}", request.FileName);
+            _logger.LogError(e, "Catch error while save file {FileName}", request.FileName);
             throw;
         }
     }
@@ -157,7 +157,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 SpreadsheetEditOptions spreadsheetEdit => spreadsheetEdit.WorksheetIndex.ToString(),
                 _ => "0"
             };
-            var convertedFile = new StorageSubFile<TEditOptions>(metaFile.OriginalFile.FileName, subIndex)
+            StorageSubFile<TEditOptions> convertedFile = new StorageSubFile<TEditOptions>(metaFile.OriginalFile.FileName, subIndex)
             { DocumentCode = metaFile.DocumentCode, EditOptions = editOptions };
             await _storage.RemoveFolder(PathBuilder.New(convertedFile.DocumentCode, new[] { convertedFile.SubCode }));
             HtmlSaveOptions saveOptions = new()
@@ -167,11 +167,11 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 HtmlTagCase = HtmlCss.Serialization.TagRenderingCase.LowerCase,
                 SavingCallback = new StorageCallback<TEditOptions>(_storage, convertedFile)
             };
-            using var originalDocument =
+            using StorageDisposableResponse<Stream> originalDocument =
                 await _storage.DownloadFile(PathBuilder.New(convertedFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
             if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
             {
-                _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+                _logger.LogError("Cannot download file {FileName}", metaFile.OriginalFile.FileName);
                 throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
             }
             using Editor editor = new(originalDocument.Response, loadOptions);
@@ -180,7 +180,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             await using StreamWriter writer = new(document);
             doc.Save(writer, saveOptions);
             await writer.FlushAsync();
-            var storageFile = (await _storage
+            StorageResponse<StorageFile>? storageFile = (await _storage
                 .SaveFile(
                     new[]
                     {
@@ -208,7 +208,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Failed to convert file with code: {documentCode}", metaFile.DocumentCode);
+            _logger.LogError(exception, "Failed to convert file with code: {DocumentCode}", metaFile.DocumentCode);
             throw;
         }
     }
@@ -221,16 +221,16 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     public async Task<StorageMetaFile<TLoadOptions, TEditOptions>?> ConvertPreviews(Guid documentCode)
     {
         const string previewFolder = "preview";
-        var metaFile = await _metaFileStorageCache.DownloadFile(documentCode);
+        StorageMetaFile<TLoadOptions, TEditOptions>? metaFile = await _metaFileStorageCache.DownloadFile(documentCode);
         if (metaFile == null)
         {
             return null;
         }
-        using var originalDocument =
+        using StorageDisposableResponse<Stream> originalDocument =
             await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
         if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
         {
-            _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+            _logger.LogError("Cannot download file {FileName}", metaFile.OriginalFile.FileName);
             throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
         }
 
@@ -249,7 +249,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 ResourceStream = svgPreview.ByteContent,
                 ResourceType = ResourceType.Preview
             };
-            var preview =
+            StorageResponse<StorageFile>? preview =
                 (await _storage.SaveFile(new List<FileContent> { file }, PathBuilder.New(documentCode, new[] { previewFolder }))).FirstOrDefault();
             if (preview is { IsSuccess: true, Response: not null })
             {
@@ -264,10 +264,11 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// <summary>
     /// Saves the document to PDF format. If an edited version of the document exists, it will be converted; otherwise, the original document will be converted.
     /// </summary>
+    /// <exception cref="ArgumentNullException"></exception>
     /// <returns></returns>
     public async Task<FileContent?> SaveToPdf(DownloadPdfRequest request)
     {
-        var metaFile = await _metaFileStorageCache.DownloadFile(request.DocumentCode);
+        StorageMetaFile<TLoadOptions, TEditOptions>? metaFile = await _metaFileStorageCache.DownloadFile(request.DocumentCode);
         if (metaFile == null)
         {
             return null;
@@ -276,12 +277,12 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
 
         try
         {
-            using var originalDocument =
+            using StorageDisposableResponse<Stream> originalDocument =
                 await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
             if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
             {
-                _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
-                throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
+                _logger.LogError("Cannot download file {FileName}", metaFile.OriginalFile.FileName);
+                throw new ArgumentNullException(nameof(metaFile.OriginalFile.FileName), $"Cannot download file {metaFile.OriginalFile.FileName}");
             }
             using Editor editor = new(originalDocument.Response, metaFile.OriginalLoadOptions);
             using EditableDocument doc = metaFile.StorageSubFiles.Any(a => a.Value.IsEdited)
@@ -312,16 +313,16 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     /// <returns></returns>
     public async Task<FileContent?> ConvertToDocument(DownloadDocumentRequest request)
     {
-        var metaFile = await _metaFileStorageCache.DownloadFile(request.DocumentCode);
+        StorageMetaFile<TLoadOptions, TEditOptions>? metaFile = await _metaFileStorageCache.DownloadFile(request.DocumentCode);
         if (metaFile == null)
         {
             return null;
         }
-        using var originalDocument =
+        using StorageDisposableResponse<Stream> originalDocument =
             await _storage.DownloadFile(PathBuilder.New(metaFile.DocumentCode, new[] { metaFile.OriginalFile.FileName }));
         if (originalDocument is not { IsSuccess: true } || originalDocument.Response == null)
         {
-            _logger.LogError("Cannot download file {file}", metaFile.OriginalFile.FileName);
+            _logger.LogError("Cannot download file {FileName}", metaFile.OriginalFile.FileName);
             throw new ArgumentNullException($"Cannot download file {metaFile.OriginalFile.FileName}");
         }
         using Editor editor = new(originalDocument.Response, metaFile.OriginalLoadOptions);
@@ -364,16 +365,13 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         string htmlContents)
     {
         await _storage.RemoveFile(PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode, currentContent.EditedHtmlName }));
-        if (currentContent.Resources.ContainsKey(currentContent.EditedHtmlName))
-        {
-            currentContent.Resources.Remove(currentContent.EditedHtmlName);
-        }
-        using var stream = new MemoryStream();
-        var writer = new StreamWriter(stream);
+        currentContent.Resources.Remove(currentContent.EditedHtmlName);
+        using MemoryStream stream = new MemoryStream();
+        StreamWriter writer = new StreamWriter(stream);
         await writer.WriteAsync(htmlContents);
         await writer.FlushAsync();
         stream.Seek(0, SeekOrigin.Begin);
-        var storageFile =
+        StorageResponse<StorageFile>? storageFile =
             (await _storage.SaveFile(new[] { new FileContent { FileName = currentContent.EditedHtmlName, ResourceStream = stream, ResourceType = ResourceType.HtmlContent } },
                 PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode }))).FirstOrDefault();
         if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
@@ -390,10 +388,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
         if (!string.IsNullOrWhiteSpace(resource.OldResourceName))
         {
             await _storage.RemoveFile(PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode, resource.OldResourceName }));
-            if (currentContent.Resources.ContainsKey(resource.OldResourceName))
-            {
-                currentContent.Resources.Remove(resource.OldResourceName);
-            }
+            currentContent.Resources.Remove(resource.OldResourceName);
         }
         ResourceType type;
         switch (resource.ResourceType)
@@ -411,11 +406,11 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
                 type = ResourceType.Audio;
                 break;
             default:
-                _logger.LogError("Resource with type: {type} is unknown", resource.ResourceType);
+                _logger.LogError("Resource with type: {ResourceType} is unknown", resource.ResourceType);
                 throw new ArgumentOutOfRangeException($"Resource with type: {resource.ResourceType} is unknown");
         }
-        await using var fileStream = resource.File.OpenReadStream();
-        var storageFile =
+        await using Stream fileStream = resource.File.OpenReadStream();
+        StorageResponse<StorageFile>? storageFile =
             (await _storage.SaveFile(new[] { new FileContent { FileName = resource.File.FileName, ResourceStream = fileStream, ResourceType = type } },
                 PathBuilder.New(currentContent.DocumentCode, new[] { currentContent.SubCode }))).FirstOrDefault();
         if (storageFile is not { IsSuccess: true } || storageFile.Response == null)
@@ -474,7 +469,7 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
     {
         try
         {
-            var response =
+            StorageResponse<string> response =
                 await _storage.GetFileText(PathBuilder.New(oneSubFile.DocumentCode, new[] { oneSubFile.SubCode, oneSubFile.EditedHtmlName }));
             if (response is not { IsSuccess: true } || response.Response == null)
             {
@@ -482,9 +477,9 @@ public class EditorService<TLoadOptions, TEditOptions> : IEditorService<TLoadOpt
             }
 
             List<IHtmlResource> resources = new(oneSubFile.Resources.Count);
-            foreach (var oneFile in oneSubFile.Resources.Values)
+            foreach (StorageFile oneFile in oneSubFile.Resources.Values)
             {
-                var stream = await _storage.DownloadFile(PathBuilder.New(oneSubFile.DocumentCode, new[] { oneSubFile.SubCode, oneFile.FileName }));
+                StorageDisposableResponse<Stream> stream = await _storage.DownloadFile(PathBuilder.New(oneSubFile.DocumentCode, new[] { oneSubFile.SubCode, oneFile.FileName }));
                 if (stream is not { IsSuccess: true } || stream.Response == null)
                 {
                     continue;

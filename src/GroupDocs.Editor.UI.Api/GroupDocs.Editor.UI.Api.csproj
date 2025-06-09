@@ -5,7 +5,7 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	  <PackageId>GroupDocs.Editor.UI.Api</PackageId>
-	  <Version>8.0.2</Version>
+	  <Version>8.0.3</Version>
 	  <Description>GroupDocs.Editor.UI.Api containing base API features required by GroupDocs.Editor.UI see https://github.com/groupdocs-editor/GroupDocs.Editor-for-.NET-UI for more details.</Description>
 	  <PackageTags>GroupDocs;Editor;UI;API;ASP.NET Core;</PackageTags>
 	  <Company>GroupDocs</Company>
