@@ -5,10 +5,10 @@ using GroupDocs.Editor.UI.Api.Services.Licensing;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddEditorLicense<Base64FileLicenseService>(builder.Configuration);
+builder.Services.AddEditorLicense<LocalFileLicenseService>(builder.Configuration);
 builder.Services.AddEditorControllers();
 builder.Services.AddEditorSwagger();
-builder.Services.AddEditor<AwsS3Storage>(builder.Configuration);
+builder.Services.AddEditor<LocalStorage>(builder.Configuration);
 builder.Services.AddCors(p => p.AddPolicy("corsApp", policy =>
 {
     policy.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin();

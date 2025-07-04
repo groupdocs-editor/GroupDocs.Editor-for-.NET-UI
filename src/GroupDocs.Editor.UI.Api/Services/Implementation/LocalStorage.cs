@@ -46,12 +46,12 @@ public class LocalStorage : IStorage
             await using FileStream fileStream = File.Open(Path.Combine(folder, fileContent.FileName), FileMode.OpenOrCreate);
             fileContent.ResourceStream.Seek(0, SeekOrigin.Begin);
             await fileContent.ResourceStream.CopyToAsync(fileStream);
-            UriBuilder uriBuilder = GetFullUri();
-            uriBuilder.Path += prefixPath.AppendKey(HttpUtility.UrlEncode(fileContent.FileName)).ToUriPath();
+            string uriBuilder = GetProtocolRelativeUrl();
+            uriBuilder += prefixPath.AppendKey(HttpUtility.UrlEncode(fileContent.FileName)).ToUriPath();
             result.Add(StorageResponse<StorageFile>.CreateSuccess(new StorageFile
             {
                 DocumentCode = prefixPath.DocumentCode,
-                FileLink = uriBuilder.Uri.ToString(),
+                FileLink = uriBuilder,
                 FileName = fileContent.FileName,
                 ResourceType = fileContent.ResourceType
             }));
@@ -104,21 +104,21 @@ public class LocalStorage : IStorage
         return StorageResponse<string>.CreateSuccess(fileText);
     }
 
-    private UriBuilder GetFullUri()
+    private string GetProtocolRelativeUrl()
     {
         HttpRequest? request = _httpContextAccessor.HttpContext?.Request;
 
         if (request == null)
             throw new InvalidOperationException("No active HTTP request.");
 
-        UriBuilder uriBuilder = new UriBuilder
-        {
-            Scheme = request.Scheme,
-            Host = request.Host.Host,
-            Port = request.Host.Port ?? (request.Scheme == "https" ? 443 : 80),
-            Path = _options.BaseUrl
-        };
+        string host = request.Host.Host;
+        int? port = request.Host.Port;
 
-        return uriBuilder;
+        // Include port only if it's non-standard (i.e., not 80 or 443)
+        string portPart = port.HasValue && port != 80 && port != 443 ? $":{port}" : "";
+
+        string path = _options.BaseUrl.TrimStart('/') ?? "";
+
+        return $"//{host}{portPart}/{path}";
     }
 }
